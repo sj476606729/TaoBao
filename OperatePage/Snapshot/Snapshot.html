@@ -1,0 +1,140 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+	<meta charset="utf-8" />
+    <script src="../../layui/layui.js"></script>
+    <script src="../../js/jquery.min.js"></script>
+    <link href="../../layui/css/layui.css" rel="stylesheet"/>
+    <link href="../../css/Currency.css" rel="stylesheet"/>
+    <script>
+        window.onload = function () {
+            layui.use('flow', function () {
+                var flow = layui.flow;
+                //当你执行这样一个方法时，即对页面中的全部带有lay-src的img元素开启了懒加载（当然你也可以指定相关img）
+                flow.lazyimg();
+            });
+           LoadImage();
+        }
+        //选中图片
+        function SelectImage(e) {
+            var id = $(e).attr("id");
+            $("img").css("border-color", '');
+            $(e).css("border-color", "red");
+            $('#name_image').val(id);
+        }
+        //删除图片
+        function DeleteImage() {
+            var name = $('#name_image').val();
+            var pd = { "x": "DeleteImage", "name": name,"id":"Snapshot" };
+            $.ajax({
+                type: "post",
+                url: '../../DataAcquisition.ashx',//注意此文件必须与当前文件在同一目录下
+                data: pd,
+                dataType: "json",
+                error: function (textstatus) {
+
+                    alert('出错');
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    var obj = eval(result);
+                    if (obj.result == "True") {
+                        LoadImage(); $('#name_image').val('');
+                    } else {
+                        alert('删除失败');
+                    }
+                    
+                }
+            });
+        }
+    </script>
+    <script>
+        //上传文件
+        layui.use('upload', function(){
+          var upload = layui.upload;
+
+          //执行实例
+          var uploadInst = upload.render({
+            elem: '#test1' //绑定元素
+            , url: '../../Ashx/Snapshot.ashx' //上传接口
+            , accept: 'images'
+            ,size:150
+            , done: function (res) {
+                var obj = eval(res);
+                alert(res["result"]);
+                LoadImage();
+            }
+            ,error: function(){
+                alert('文件上传失败');
+            }
+          });
+        });
+        //加载图片
+        function LoadImage() {
+            $('#loading').html("<div class='loader loader--spinningDisc' style='margin-left:45%'></div>");
+            var pd = { "x": "GetImage","id":"Snapshot" };
+            $.ajax({
+                type: "post",
+                url: '../../DataAcquisition.ashx',//注意此文件必须与当前文件在同一目录下
+                data: pd,
+                dataType: "json",
+                error: function (textstatus) {
+
+                    alert('出错');
+                    $('#loading').remove();
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    var obj = eval(result);
+                    if (obj["result"] == "") { $('#loading').remove(); return;}
+                    var arr = new Array(), name_arr = new Array();
+                    var result = obj["result"] + "";
+                    arr = result.split('+');
+                    $('#image').html('');
+                    for (i = 0; i < arr.length; i++) {
+                        name_arr = arr[i].split('/');
+                        $('#image').append("<img id='"+name_arr[name_arr.length - 1]+"' src='" + arr[i] + "' style='width:200px;height:200px;margin-right:10px;margin-bottom:10px;' onclick='SelectImage(this)' />");
+                    }
+                    $('#loading').remove();
+                }
+            });
+            
+        }
+    </script>
+    <style>
+        img{
+            
+            border:solid;
+            border-width:1.5px;
+            border-color:black;
+            
+        }
+        img:hover{
+            
+            border:solid;
+            border-width:1.5px;
+            border-color:red;
+            
+        }
+    </style>
+</head>
+<body style="width:96%;margin-left:15px">
+    <div style="margin-top:15px">
+        <button type="button" class="layui-btn" id="test1">
+            <i class="layui-icon">&#xe67c;</i>上传图片
+        </button>
+        <button type="button" class="layui-btn" onclick="DeleteImage()">
+            删除图片
+        </button>
+        <input type="text" id="name_image" style="width:20%;font-size:15px" />
+        
+    </div>
+    <div id="loading" style="width:100%"></div>
+    <div id="image" style="margin-top:20px;">
+       
+    </div>
+
+</body>
+</html>

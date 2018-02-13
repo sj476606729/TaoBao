@@ -1,0 +1,115 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+	<meta charset="utf-8" />
+    <script src="../../js/jquery.min.js"></script>
+    <meta charset="utf-8" />
+    <link href="../../layui/css/layui.css" rel="stylesheet" />
+    <script src="../../layui/layui.js"></script>
+    <script>
+        window.onload=function(){
+            GetBuyer();
+        }
+    </script>
+    <!--向服务器获取数据↓-->
+    <script>
+        //向服务器获取最近数据
+        function GetBuyer(){
+            $('#loading').html("<div class='loader loader--spinningDisc' style='margin-left:45%'></div>");
+            var pd={"x":"Buyer"};
+            $.ajax({
+                type: "post",
+                url: "../../Handler.ashx",//注意此文件必须与当前文件在同一目录下
+                data:pd,
+                dataType: "json",
+                error: function (textstatus) {
+
+                    alert('出错product');
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    var obj=eval(result);
+                    table_style(obj)
+                }
+            });
+        }
+        //表格数据加载
+        function table_style(datanav){
+            var tb = document.getElementById("table-2");
+            while(tb.rows.length>1){
+                tb.deleteRow(1);
+            }
+            for (var i = 0; i < datanav.length; i++) {
+                var html="<tr ><td>"+datanav[i]["Number"]+")"+"</td><td>"+datanav[i]["Account"]+"</td><td>"+
+                    datanav[i]["AllPoints"]+"</td><td>"+datanav[i]["UsedPoints"]+"</td><td>"+datanav[i]["Remark"]+
+                    "</td></tr>"
+                $('#table-2').append(html);
+            }
+            $('#loading').remove();
+        }
+    </script>
+    <!--表格样式-->
+    <style>
+        label, label {
+            color: white;
+            margin-left: 10%;
+        }
+
+        .edit {
+            color: rgba(0,0,0,0.3);
+        }
+
+        label:hover {
+            color: red;
+            cursor: pointer;
+        }
+    </style>
+    <!--向服务器获取数据↑-->
+    <!--加载动画↓-->
+    <style>
+        .loader--spinningDisc {
+            border: solid 0.5em #9b59b6;
+            border-right-color: transparent;
+            border-left-color: transparent;
+            padding: 0.5em;
+            width: 2em;
+            height: 2em;
+            border-radius: 50%;
+            background: #3498db;
+            background-clip: content-box;
+            animation: spinDisc 1.5s linear infinite;
+        }
+
+        @keyframes spinDisc {
+            50% {
+                border-top-color: #3498db;
+                border-bottom-color: #3498db;
+                background-color: #2ecc71;
+            }
+
+            100% {
+                transform: rotate(1turn);
+            }
+        }
+    </style>
+    <!--加载动画↑-->
+</head>
+<body style="margin-left:20px;margin-right:20px">
+    <div style="width:100%" id="loading"></div>
+    <div style="width:100%;height:100%">
+        <table class="layui-table" id="table-2" style="width:100%;height:100%;">
+            <thead style="width:100%">
+                <tr style="width:100%;">
+                    <th style="width:2%">序号</th>
+                    <th style="width:20%">买家昵称</th>
+                    <th style="width:8%">所有积分</th>
+                    <th style="width:8%">已用积分</th>
+                    <th style="width:25%">备注</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</body>
+</html>

@@ -1,0 +1,457 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+    <!--此处为layui-->
+    <meta name="renderer" content="webkit" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="plugins/layui/css/layui.css" media="all" />
+    <script src="plugins/layui/layui.js"></script>
+    <script src="../layui/layui.js"></script>
+    <link href="../layui/css/layui.css" rel="stylesheet" />
+    <!--此处为layui-->
+    <script src="../js/jquery.min.js"></script>
+    <script>
+        var Order_key,points;
+        window.onload = function show() {//接收传过来的修改订单key
+            var Request = new Object();
+            Request = GetRequest();
+            
+            var key=Request["key"]+"";
+            if(key!="undefined"){
+                $('#submit_but').attr("disabled",true);
+                $('#taobaohao_data').attr("disabled",true);
+                var pd={"x":"GetModifyOrder","key":key};
+                $.ajax({
+                    type: "post",
+                    url: '../Handler.ashx',//注意此文件必须与当前文件在同一目录下
+                    data: pd,
+                    dataType: "json",
+                    error: function (textstatus) {
+           
+                        alert("出错，确保账号有权操作");
+                        // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                    },
+                    success: function (result) {//result为任意定义的用于装载参数变量
+                        var obj = eval(result);
+                        Order_key=obj[0].Key;points=obj[0].PaidPrice;
+                        $('#date').val(obj[0].Date);$('#taobaohao_data').val(obj[0].Account);
+                        $('#combox').val(obj[0].Product);$('#amount_data').val(obj[0].Amount);
+                        $('#payableprice_data').val(obj[0].PayablePrice);$('#paidprice_data').val(obj[0].PaidPrice);
+                        $('#giftprice_data').val(obj[0].GiftPrice);$('#contract_data').val(obj[0].Contract);
+                        $('#address_data').val(obj[0].Address);$('#weight_data').val(obj[0].Weight);
+                        $('#postprice_data').val(obj[0].PostPrice);$('#source_data').val(obj[0].Source);
+                        $('#modify_but').attr("disabled", false); $('#remark_data').val(obj[0].Remark);
+                        $('#combox2').val(obj[0].Label);
+                    }
+                });
+            }
+            
+        }
+        //添加订单数据
+        function add() {
+            $('#load').css("visibility", "visible");
+            var date = $('#date').val(); var taobaohao = $('#taobaohao_data').val();
+            var product = $('#combox').val();
+            var payableprice = $('#payableprice_data').val(); var paidprice = $('#paidprice_data').val();
+            var giftprice = $('#giftprice_data').val(); var contract = $('#contract_data').val();
+            var address = $('#address_data').val();
+            var source = $('#source_data').val();
+            var remark=$('#remark_data').val();var label=$('#combox2').val();
+            var pd = {
+                "x": "order_add", "date": date, "taobaohao": taobaohao, "product": product,
+                "payableprice": payableprice, "paidprice": paidprice, "giftprice": giftprice, "contract": contract,
+                "address":address,"source":source,"remark":remark,"label":label
+            }
+            $.ajax({
+                type: "post",
+                url: '../Handler.ashx',//注意此文件必须与当前文件在同一目录下
+                data: pd,
+                dataType: "json",
+                error: function (textstatus) {
+
+                    alert('添加订单出错');
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    var obj = eval(result);
+                    $('#load').css("visibility","hidden");
+                    if(obj.result=="True"){
+                        var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                        parent.layer.close(index);
+                    }else{
+                        alert('添加订单失败!');
+                    }
+                }
+            });
+        }
+        //修改订单数据
+        function ModifyOrder(){
+            var date = $('#date').val(); var taobaohao = $('#taobaohao_data').val();
+            var product = $('#combox').val();
+            var payableprice = $('#payableprice_data').val(); var paidprice = $('#paidprice_data').val();
+            var giftprice = $('#giftprice_data').val(); var contract = $('#contract_data').val();
+            var address = $('#address_data').val(); 
+             var source = $('#source_data').val();
+            var remark = $('#remark_data').val(); var label = $('#combox2').val();
+            var pd = {
+                "x": "ModifyOrder", "date": date, "taobaohao": taobaohao, "product": product,
+                "payableprice": payableprice, "paidprice": paidprice, "giftprice": giftprice, "contract": contract,
+                "address": address,  "source": source, "remark": remark,"label":label,
+                "key": Order_key, "points": points
+            }
+            $('#modify_but').attr("disabled",true);
+            $.ajax({
+                type: "post",
+                url: '../Handler.ashx',//注意此文件必须与当前文件在同一目录下
+                data: pd,
+                dataType: "json",
+                error: function (textstatus) {
+
+                    alert(ttextstatus);
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    var obj = eval(result);
+                    $('#modify_but').attr("disabled",false);
+                    if(obj.result=="True"){
+                        var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                        parent.layer.close(index);
+                    }else{
+                        alert('修改失败!');
+                    }
+                    
+                    
+                }
+            });
+        }
+        //分割订单数据
+        function SplitOrder(e){
+            var data=$(e).val()+"";
+            var split=data.split('&');
+            $('#date').val(split[0]);$('#taobaohao_data').val(split[1]);$('#combox').val(split[2]);
+            $('#payableprice_data').val(split[3]);$('#paidprice_data').val(split[4]);$('#giftprice_data').val(split[5]);
+            $('#contract_data').val(split[6]);$('#address_data').val(split[7]);
+        }
+    </script>
+    <script>
+        //获取url传递参数并解析
+        function GetRequest() {
+
+        var url = location.search; //获取url中"?"符后的字串
+
+        var theRequest = new Object();
+        if (url.indexOf("?") != -1) {
+
+            var str = url.substr(1);
+            strs = str.split("&");
+
+            for(var i = 0; i < strs.length; i ++) {
+
+                theRequest[strs[i].split("=")[0]]=(strs[i].split("=")[1]);
+            }
+
+        }
+        return theRequest;
+
+}
+    </script>
+    <style>
+        h3 {
+            text-align: left;
+        }
+        tr {
+            height: 50px;
+        }
+    </style>
+    <!--使框架frame2自适应-->
+    <script>
+      
+        //function product_list(e){
+        //    $(e).html("<li data-value='1'>补水五件套</li><li>补水三件套</li><li>活肤水</li><li>活力乳</li>"+
+        //                           "<li>活力霜</li><li>补水精华液</li><li>cc霜</li><li>补水洁面乳</li>"+
+        //                           "<li>美白五件套</li><li>美白三件套</li><li>柔肤水</li><li>拍拍乳</li>"+
+        //                            "<li>滋养霜</li><li>美白精华液</li><li>美白洁面乳</li><li>眼霜</li>"+
+        //                            "<li>修护五件套</li><li>修护三件套</li><li>细肤水</li><li>肌能凝露</li>"+
+        //                            "<li>冰晶凝霜</li><li>修护洁面乳</li><li>修护精华液</li><li>金妆凝乳</li>"+
+        //                            "<li>补水面膜</li><li>美白面膜</li><li>精华膜</li><li>白金日霜</li>"+
+        //                            "<li>无暇晚霜</li><li>动力露</li><li>水缘乳</li><li>盈润组合五件套</li><li>白金精华素</li>");
+        //}
+    </script>
+    <!--layui日历js代码下-->
+    <script>
+        layui.use(['form', 'layedit', 'laydate'], function() {
+            var form = layui.form,
+                layer = layui.layer,
+                layedit = layui.layedit,
+                laydate = layui.laydate;
+
+            //日期
+            laydate.render({
+                elem: '#date'
+            });
+            laydate.render({
+                elem: '#date1'
+            });
+
+            //创建一个编辑器
+            var editIndex = layedit.build('LAY_demo_editor');
+
+            //自定义验证规则
+            form.verify({
+                title: function(value) {
+                    if (value.length < 5) {
+                        return '标题至少得5个字符啊';
+                    }
+                },
+                pass: [/(.+){6,12}$/, '密码必须6到12位'],
+                content: function(value) {
+                    layedit.sync(editIndex);
+                }
+            });
+
+            //监听指定开关
+            form.on('switch(switchTest)', function(data) {
+                layer.msg('开关checked：' + (this.checked ? 'true' : 'false'), {
+                    offset: '6px'
+                });
+                layer.tips('温馨提示：请注意开关状态的文字可以随意定义，而不仅仅是ON|OFF', data.othis)
+            });
+
+            //监听提交
+            form.on('submit(demo1)', function(data) {
+                layer.alert(JSON.stringify(data.field), {
+                    title: '最终的提交信息'
+                })
+                return false;
+            });
+
+
+        });
+    </script>
+    <!--layui日历js代码上-->
+    <!--加载等待动画↓-->
+    <style>
+        .loader--spinningDisc {
+            border: solid 0.5em #9b59b6;
+            border-right-color: transparent;
+            border-left-color: transparent;
+            padding: 0.5em;
+            width: 2em;
+            height: 2em;
+            border-radius: 50%;
+            background: #3498db;
+            background-clip: content-box;
+            animation: spinDisc 1.5s linear infinite;
+        }
+
+        @keyframes spinDisc {
+            50% {
+                border-top-color: #3498db;
+                border-bottom-color: #3498db;
+                background-color: #2ecc71;
+            }
+
+            100% {
+                transform: rotate(1turn);
+            }
+        }
+    </style>
+    <!--加载等待动画↑-->
+    
+</head>
+<body >
+    
+    <div style="height:30px">
+
+    </div>
+    <form >
+        <div class="layui-form-item" style="width:auto;margin-left:15px">
+            <div class="layui-inline" style="width:1000px;height:500px">
+                <table style="width:auto">
+                    <tr>
+                        <td style="font-size:18px;width:80px">日期:</td>
+                        <td style="margin-left:8px;width:120px"><input type="text" name="date" id="date" style="line-height:30px; height:30px;width:90%" placeholder="yyyy-MM-dd" autocomplete="off" /></td>
+                        <td style="font-size:18px;width:80px">淘宝号:</td>
+                        <td style="margin-left:8px;width:170px"><input type="text" id="taobaohao_data" style="line-height:30px; height:30px;width:90%" /></td>
+                        <td style="font-size:18px;width:100px">产品:</td>
+                        <td style="margin-left:8px;width:315px">
+                            <!--下拉列表框下-->
+                            <div class="wrap" style="width:80%">
+                                <div class="nice-select" name="nice-select" >
+                                    <input type="text" id="combox" value="==选择产品==" >
+                                    <ul style="margin: 0;padding: 0;">
+                                        <li data-value='1'>补水五件套</li><li>补水三件套</li>
+                                        <li>活肤水</li><li>活力乳</li><li>活力霜</li><li>补水精华液</li>
+                                        <li>cc霜</li><li>补水洁面乳</li><li>美白五件套</li>
+                                        <li>美白三件套</li><li>柔肤水</li><li>拍拍乳</li><li>滋养霜</li><li>美白精华液</li>
+                                        <li>美白洁面乳</li><li>眼霜</li><li>修护五件套</li> <li>修护三件套</li>
+                                        <li>细肤水</li><li>肌能凝露</li><li>冰晶凝霜</li> <li>修护洁面乳</li>
+                                        <li>修护精华液</li><li>金妆凝乳</li><li>补水面膜</li><li>美白面膜</li>
+                                        <li>精华膜</li><li>白金日霜</li><li>无暇晚霜</li><li>动力露</li>
+                                        <li>水缘乳</li><li>盈润组合五件套</li><li>白金精华素</li>
+                                        <li>全效眼霜</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <!--下拉列表框上-->
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="font-size:18px">数量:</td>
+                        <td style="margin-left:8px"><input type="text" id="amount_data" value="0" style="line-height:30px; height:30px;width:90%;" disabled="disabled" /></td>
+                        <td style="font-size:18px">应付价:</td>
+                        <td style="margin-left:8px;"><input type="text" id="payableprice_data" style="line-height:30px; height:30px;width:90%" /></td>
+                        <td style="font-size:18px;">联系方式:</td>
+                        <td style="margin-left:8px;"><input type="text" id="contract_data" style="line-height:30px; height:30px;width:80%" /></td>
+                        
+                    </tr>
+                    <tr>
+                        <td style="font-size:18px">赠品价:</td>
+                        <td style="margin-left:8px"><input type="text" id="giftprice_data" value="0" style="line-height:30px; height:30px;width:90%" /></td>
+                        <td style="font-size:18px">实付价:</td>
+                        <td style="margin-left:8px"><input type="text" id="paidprice_data" style="line-height:30px; height:30px;width:90%" /></td>
+                        <td style="font-size:18px">地址:</td>
+                        <td style="margin-left:8px"><input type="text" id="address_data" style="line-height:30px; height:30px;width:80%" /></td>
+                    </tr>
+
+                    <tr>
+                        <td style="font-size:18px">重量:</td>
+                        <td style="margin-left:8px"><input type="text" id="weight_data" style="line-height:30px; height:30px;width:90%" disabled="disabled" /></td>
+                        <td style="font-size:18px">邮费:</td>
+                        <td style="margin-left:8px"><input type="text" id="postprice_data" style="line-height:30px; height:30px;width:90%" disabled="disabled" /></td>
+                        <td style="font-size:18px">标签:</td>
+                        <td style="margin-left:8px">
+                            <!--下拉列表框下-->
+                            <div class="wrap" style="width:80%">
+                                <div class="nice-select" name="nice-select">
+                                    <input type="text" id="combox2" value="">
+                                    <ul style="margin: 0;padding: 0;">
+                                        <li data-value='1'>询问正品</li>
+                                        <li>询问快递</li><li>产品损坏</li>
+                                        <li>询问活动</li><li>询问礼品</li>
+                                        <li>要求优惠</li><li>询问多个</li>
+                                        <li>咨询产品</li><li>不懂淘宝</li>
+                                        <li>售后问题</li><li>差价太大</li>
+                                        <li>询问价格</li><li>询问红包</li>
+                                        <li>物流相关</li><li>使用异样</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <!--下拉列表框上-->
+                        </td>
+                    </tr>
+                   <tr>
+                       <td style="font-size:18px">来源:</td>
+                       <td style="margin-left:8px"><input type="text" id="source_data" style="line-height:30px; height:30px;width:90%" /></td>
+                       <td></td>
+                       <td></td>
+                       <td style="font-size:18px">备注:</td>
+                       <td style="margin-left:8px"><input type="text" id="remark_data" style="line-height:30px; height:30px;width:80%" /></td>
+                   </tr>
+                </table>
+                <table style="width:80%">
+                    <tr >
+                        <td style="width:70%"><input type="text" style="width:90%;" ondblclick="SplitOrder(this)" /></td>
+                        <td><div class='loader loader--spinningDisc' id="load" style="float:left;margin-left:5px;visibility:hidden"></div></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="button" id="submit_but" value="提交" style="width:50%;height:95%;margin-top:20px" onclick="add()" />
+                        </td>
+                        <td><input type="button" id="modify_but" value="修改" style="width:50%;height:95%;margin-left:5%;margin-top:20px" disabled="disabled" onclick="ModifyOrder()" /></td>
+                    </tr>
+                </table>
+
+            </div>
+        </div>
+        
+        <!--下拉框js下-->
+        <script type="text/javascript" src="plugins/layui/lay/modules/jquery.js"></script>
+        <script>
+        $('[name="nice-select"]').click(function(e){
+	        $('[name="nice-select"]').find('ul').hide();
+	        $(this).find('ul').show();
+	        e.stopPropagation();
+        });
+        $('[name="nice-select"] li').hover(function(e){
+	        $(this).toggleClass('on');
+	        e.stopPropagation();
+        });
+        $('[name="nice-select"] li').click(function(e){
+	        var val = $(this).text();
+	        var dataVal = $(this).attr("data-value");
+	        var data = $(this).parents('[name="nice-select"]').find('input').val();
+	        if(data!="==选择产品=="&&data!="==选择标签=="&&data!=""){$(this).parents('[name="nice-select"]').find('input').val(data +'+'+val);}else $(this).parents('[name="nice-select"]').find('input').val(val);
+	        $('[name="nice-select"] ul').hide();
+	        e.stopPropagation();
+	        //alert($(this).parents('[name="nice-select"]').find('input').val());
+        });
+        $(document).click(function(){
+	        $('[name="nice-select"] ul').hide();
+        });
+        </script>
+        <style>
+            input {
+                font-size: 14px;
+                font-family: "微软雅黑", "Microsoft Yahei";
+            }
+
+            .nice-select {
+                width: 245px;
+                padding: 0 10px;
+                height: 38px;
+                border: 1px solid #999;
+                position: relative;
+                box-shadow: 0 0 5px #999;
+                /*此处有图片地址*/
+                background: #fff url(DataAdd/a2.jpg) no-repeat right center;
+                cursor: pointer;
+            }
+
+                .nice-select input {
+                    display: block;
+                    width: 100%;
+                    height: 38px;
+                    line-height: 38px \9;
+                    border: 0;
+                    outline: 0;
+                    background: none;
+                    cursor: pointer;
+                }
+
+                .nice-select ul {
+                    width: 100%;
+                    display: none;
+                    position: absolute;
+                    left: -1px;
+                    top: 38px;
+                    overflow: hidden;
+                    background-color: #fff;
+                    max-height: 300px;
+                    overflow-y: auto;
+                    border: 1px solid #999;
+                    border-top: 0;
+                    box-shadow: 0 3px 5px #999;
+                    z-index: 9999;
+                }
+
+                    .nice-select ul li {
+                        height: 30px;
+                        line-height: 30px;
+                        overflow: hidden;
+                        padding: 0 10px;
+                        cursor: pointer;
+                        font-family: "微软雅黑", "Microsoft Yahei";
+                    }
+
+                        .nice-select ul li.on {
+                            background-color: #e0e0e0;
+                        }
+        </style>
+        <!--下拉框js上-->
+    </form>
+</body>
+</html>

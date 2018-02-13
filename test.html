@@ -1,0 +1,53 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+	<meta charset="utf-8" />
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <script src="js/jquery.min.js"></script>
+    <script src="layui/layui.js"></script>
+    <link href="layui/css/layui.css" rel="stylesheet" />
+ 
+    
+</head>
+<body>
+    <p><input type="file" id="upfile"></p>
+    <p><input type="button" id="upJS" value="用原生JS上传"></p>
+    <p><input type="button" id="upJQuery" value="用jQuery上传"></p>
+    <script>
+        /*原生JS版*/
+        document.getElementById("upJS").onclick = function () {
+            /* FormData 是表单数据类 */
+            var fd = new FormData();
+            var ajax = new XMLHttpRequest();
+            fd.append("upload", 1);
+            /* 把文件添加到表单里 */
+            fd.append("upfile", document.getElementById("upfile").files[0]);
+            ajax.open("post", "FileReceive.ashx", true);
+            ajax.onload = function () {
+                console.log(ajax.responseText);
+            };
+
+            ajax.send(fd);
+
+        }
+        $('#upJQuery').on('click', function() {
+         var fd = new FormData();
+
+         fd.append("upfile", $("#upfile").get(0).files[0]);
+         $.ajax({
+         url: "FileReceive.ashx",
+         type: "POST",
+         processData: false,
+         contentType: false,
+         data: fd,
+         success: function(d) {
+         console.log(d);
+         }
+         });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="Pragma" content="Pragma">
+    <meta http-equiv="cache-control" content="max-age=36000">
+    <title>后台登录</title>
+    <link href="LogIn/css/login.css" type="text/css" rel="stylesheet">
+    <script src="../js/jquery.min.js"></script>
+    <script>
+        //登陆获取用户名和密码
+        function log() {
+
+            var account = $('#account_text').val();
+            var pwd = $('#pwd_text').val();
+            if (account == "" || pwd == "") {  return; }
+            var pd = { "x": "0", "account": account };
+            $.ajax({
+                type: "post",
+                url: '../Handler.ashx',
+                data: pd,
+                dataType: "json",
+                error: function (textstatus) {
+
+                    alert('出错login');
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    var obj = eval(result);
+                    window.location.href = "MainPage.html?account="+account;
+                }
+            });
+        }
+        //初始检测是否已登录
+        window.onload=function(){
+            var pd={"x":"login"}
+            $.ajax({
+                type: "post",
+                url: '../Handler.ashx',//注意此文件必须与当前文件在同一目录下
+                data: pd,
+                dataType: "json",
+                error: function (textstatus) {
+           
+                    alert(ttextstatus);
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    var obj = eval(result);
+                    if(obj.result=="跳转"){window.location.href="MainPage.html";}
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+
+    <div class="login">
+        <div class="message">淘宝后台登录</div>
+        <div id="darkbannerwrap"></div>
+
+        <form method="post">
+            <input name="action" value="login" type="hidden">
+            <input name="username" id="account_text" placeholder="用户名" required="" type="text">
+            <hr class="hr15">
+            <input name="password" id="pwd_text" placeholder="密码" required="" type="password">
+            <hr class="hr15">
+            <input value="登录" style="width:100%;" type="button" onclick="log()">
+            <hr class="hr20">
+            <!-- 帮助 <a onClick="alert('请联系管理员')">忘记密码</a> -->
+        </form>
+
+
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,190 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+    <script src="../../js/jquery.min.js"></script>
+	<meta charset="utf-8" />
+    <link href="../../layui/css/layui.css" rel="stylesheet" />
+    <script src="../../layui/layui.js"></script>
+    <script>
+        window.onload=function(){
+            GetProdcut();
+        }
+    </script>
+    <!--向服务器获取数据↓-->
+    <script>
+        //向服务器获取最近数据
+        function GetProdcut(){
+            $('#loading').html("<div class='loader loader--spinningDisc' style='margin-left:45%'></div>");
+            var pd={"x":"Product"};
+            $.ajax({
+                type: "post",
+                url: "../../Handler.ashx",//注意此文件必须与当前文件在同一目录下
+                data:pd,
+                dataType: "json",
+                error: function (textstatus) {
+           
+                    alert('出错product');
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    var obj=eval(result);
+                    table_style(obj)
+                }
+            });
+        }
+        //表格数据加载
+        function table_style(datanav){
+            var tb = document.getElementById("table-2");
+            while(tb.rows.length>1){
+                tb.deleteRow(1);
+            }
+            for (var i = 0; i < datanav.length; i++) {
+                for(var j=0;j<datanav[i].length;j++){
+                    var html="<tr ><td>"+datanav[i][j]["Number"]+")"+"</td><td>"+datanav[i][j]["Product"]+"</td><td>"+
+                    datanav[i][j]["SalePrice"]+"</td><td>"+datanav[i][j]["Specification"]+"</td><td>"+datanav[i][j]["Inventory"]+"</td><td>"+
+                    datanav[i][j]["RetailPrice"] + "</td><td>" + datanav[i][j]["Activite"] + "</td><td>" + "<label  onclick='modifyproduct(this)' class='edit' name='" + datanav[i][j]["Product"] + "'>编辑</label><label onclick='delete_pro(this)'  name='" + datanav[i][j]["Product"] + "'>删除</label>"
+                    "</td></tr>"
+                    $('#table-2').append(html);
+                }
+                
+            }
+            $('#loading').remove();
+        }
+    </script>
+    <script>
+        //添加数据
+        function addproduct (){
+            layui.use('layer', function(){
+                var layer = layui.layer;
+                layer.open({
+                    type: 2,
+                    title:"产品添加",
+                    content: '../../OperatePage/ProductAdd.html',
+                    area:['500px','450px'],
+                    end:function(){
+                        GetProdcut();
+                    }
+                });
+            });
+        };
+        //修改数据
+        function modifyproduct(e){
+            var id=$(e).attr("name");
+            layui.use('layer', function(){
+                var layer = layui.layer;
+                layer.open({
+                    type: 2,
+                    title:"产品修改",
+                    content: '../../OperatePage/ProductAdd.html?id='+decodeURI(id),
+                    area:['500px','450px'],
+                    end:function(){
+                        GetProdcut();
+                    }
+                });
+            });
+        };
+        //删除数据
+        function delete_pro(e){
+            var id=$(e).attr("name");
+            layui.use('layer', function(){
+                var layer = layui.layer;
+                layer.confirm('确定删除吗？', {icon: 3, title:'提示'}, function(index){
+                    //do something
+
+                    var pd={"x":"delete_pro","id":id};
+                    $.ajax({
+                        type: "post",
+                        url: '../../Handler.ashx',//注意此文件必须与当前文件在同一目录下
+                        data: pd,
+                        dataType: "json",
+                        error: function (textstatus) {
+
+                            alert("出错，可能账号权限未开通");
+                            // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                        },
+                        success: function (result) {//result为任意定义的用于装载参数变量
+                            var obj = eval(result);
+                            if(obj.result=="删除失败"){alert(obj.result);return;}
+                            GetProdcut();
+                        }
+                    });
+                    layer.close(index);
+                });
+            });
+
+        }
+    </script>
+    <!--表格样式-->
+    <style>
+        label,label{
+            color:white;
+            margin-left:10%
+        }
+        .edit{
+            color:rgba(0,0,0,0.3);
+        }
+        label:hover{
+            color:red;
+            cursor:pointer;
+            
+        }
+    </style>
+    <!--向服务器获取数据↑-->
+    <!--加载动画↓-->
+        <style>
+            .loader--spinningDisc {
+                border: solid 0.5em #9b59b6;
+                border-right-color: transparent;
+                border-left-color: transparent;
+                padding: 0.5em;
+                width: 2em;
+                height: 2em;
+                border-radius: 50%;
+                background: #3498db;
+                background-clip: content-box;
+                animation: spinDisc 1.5s linear infinite;
+            }
+            @keyframes spinDisc {
+             50% {
+             border-top-color: #3498db;
+             border-bottom-color: #3498db;
+             background-color: #2ecc71;
+            }
+             100% {
+             transform: rotate(1turn);
+            }
+            }
+
+</style>
+    <!--加载动画↑-->
+    
+</head>
+<body style="height:100%;width:96% ;margin-left:2%">
+    <div class="box" style="width:100%;height:10%;margin-top:15px;">
+        <div class="form-actions" style="width:100%;height:10%">
+            <button style="float:left" class="layui-btn" onclick="addproduct()">添加产品</button>
+        </div>
+    </div>
+    <div style="width:100%" id="loading"></div>
+    <br />
+    <div style="width:100%;height:100%;padding-top:25px">
+        <table lay-even class="layui-table" id="table-2" style="width:100%;height:100%;">
+            <thead style="width:100%">
+                <tr style="width:100%;">
+                    <th style="width:2%">序号</th>
+                    <th style="width:20%">产品名称</th>
+                    <th style="width:5%">卖价</th>
+                    <th style="width:5%">规格</th>
+                    <th style="width:5%">库存</th>
+                    <th style="width:6%">零售价</th>
+                    <th style="width:20%">活动</th>
+                    <th style="width:8%">操作</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+</body>
+</html>

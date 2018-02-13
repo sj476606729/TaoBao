@@ -1,0 +1,83 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="../../js/jquery.min.js"></script>
+    <script src="echarts.min.js"></script>
+    <title>Document</title>
+    <script>
+        //获取首页数据
+        window.onload=function(){
+            var pd={"x":"HomePage"}
+            $.ajax({
+                type: "post",
+                url: '../../DataAcquisition.ashx',//注意此文件必须与当前文件在同一目录下
+                data: pd,
+                dataType: "json",
+                error: function (textstatus) {
+           
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    var obj = eval(result);
+                    $('#oldyear').html("2017：￥"+obj.OldYear);
+                    $('#nowyear').html("2018：￥"+obj.NowYear);
+                    $('#oldmonth').html("2017：￥"+obj.OldMonth);
+                    $('#nowmonth').html("2018：￥"+obj.NowMonth);
+                    $('#allmoney').html("总营收入：￥"+obj.All);
+                }
+            });
+        }
+    </script>
+  
+</head>
+
+<body style="width:100%">
+    <div id="main" style="width: 600px;height:400px;"></div>
+    <script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('main'));
+
+        // 指定图表的配置项和数据
+        var option = {
+            title: {
+                text: 'ECharts 入门示例'
+            },
+            tooltip: {},
+            legend: {
+                data: ['近七天平均停留时长']
+            },
+            xAxis: {
+                data: ["衬衫", "羊毛衫", "雪纺衫", "裤子", "高跟鞋", "袜子"]
+            },
+            yAxis: {},
+            series: [{
+                name: '近七天平均停留时长',
+                type: 'bar',
+                data: [5, 20, 36, 10, 10, 20]
+            }]
+        };
+
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+    </script>
+
+    <div style="width:100%;margin-left:40px;margin-top:20px">
+        <div style="float:left;font-size:40px">全年销售额：</div>
+        <div style="float:left;font-size:30px;color:green" id="oldyear">2017：***</div>
+        <div style="float:left;font-size:30px;margin-left:50px;color:red" id="nowyear">2018：***</div>
+    </div>
+    <div style="width:100%;float:left;margin-top:40px;margin-left:40px">
+        <div style="font-size:40px;float:left">当月销售额：</div>
+        <div style="font-size:30px;float:left;color:green" id="oldmonth">2017：***</div>
+        <div style="font-size:30px;float:left;margin-left:50px;color:red" id="nowmonth">2018：***</div>
+    </div>
+    <div style="float:left;margin-left:10%;margin-top:50px">
+        <h1 style="font-size:80px" id="allmoney">总营收入：***</h1>
+    </div>
+</body>
+
+</html>

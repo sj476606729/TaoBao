@@ -1,0 +1,328 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+	<meta charset="utf-8" />
+    <script src="../js/jquery.min.js"></script>
+    <script src="../layui/layui.js"></script>
+    <link href="../layui/css/layui.css" rel="stylesheet" />
+    <script src="../js/JsonExportExcel.min.js"></script>
+    <link href="../css/Currency.css" rel="stylesheet" />
+     <script>
+         window.onload=function(){
+            RecentDay("30");
+        }
+    </script>
+    <script>
+        //添加订单
+        function AddOrder(){
+            layui.use('layer', function(){
+                var layer = layui.layer;
+                layer.open({
+                    type: 2, 
+                    title:'添加订单',
+                    content: '../OperatePage/DataAdd.html', //这里content是一个URL，如果你不想让iframe出现滚动条，你还可以content: ['http://sentsin.com', 'no']
+                    area:['80%','500px'],
+                    end:function(){
+                        RecentDay(30);
+                    }
+                });
+            }); 
+        }
+        //修改订单
+        function ModifyOrder(e){
+            var key=$(e).attr("name");
+            layui.use('layer', function(){
+                var layer = layui.layer;
+                layer.open({
+                    type: 2,
+                    title:"产品修改",
+                    content: '../OperatePage/DataAdd.html?key='+key,
+                    area:['80%','500px'],
+                    moveOut:true,
+                    end:function(){
+                        RecentDay(30);
+                    }
+                });
+            });
+        }
+        //删除订单
+        function DeleteOrder(e){
+            var Key=$(e).attr("name");
+            layui.use('layer', function(){
+                var layer = layui.layer;
+                layer.confirm('确定删除吗？', {icon: 3, title:'提示'}, function(index){
+                    //do something
+
+                    var pd={"x":"DeleteOrder","Key":Key};
+                    $.ajax({
+                        type: "post",
+                        url: '../Handler.ashx',//注意此文件必须与当前文件在同一目录下
+                        data: pd,
+                        dataType: "json",
+                        error: function (textstatus) {
+
+                            alert("出错，可能账号权限未开通");
+                            // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                        },
+                        success: function (result) {//result为任意定义的用于装载参数变量
+                            var obj = eval(result);
+                            if(obj.result=="False"){alert('删除失败');return;}
+                            RecentDay("30");
+                        }
+                    });
+                    layer.close(index);
+                });
+            });
+        }
+        //搜索订单
+        function SearchOrder(e){
+            if(event.keyCode==13){
+                var Account=$(e).val();
+                if(Account==""){return;}
+                $('#loading').html("<div class='loader loader--spinningDisc' style='margin-left:45%'></div>");
+                var pd={"x":"SearchOrder","Account":Account};
+                $.ajax({
+                    type: "post",
+                    url: '../Handler.ashx',//注意此文件必须与当前文件在同一目录下
+                    data: pd,
+                    dataType: "json",
+                    error: function (textstatus) {
+           
+                        alert("出错");
+                        $('#loading').html("");
+                        // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                    },
+                    success: function (result) {//result为任意定义的用于装载参数变量
+                        var obj = eval(result);
+                        table_style(obj);
+                    }
+                });
+            }
+        }
+        //搜索联系人
+        function SearchPerson(e){
+            if(event.keyCode==13){
+                var Account=$(e).val();
+                if(Account==""){return;}
+                $('#loading').html("<div class='loader loader--spinningDisc' style='margin-left:45%'></div>");
+                var pd={"x":"SearchPerson","Account":Account};
+                $.ajax({
+                    type: "post",
+                    url: '../DataAcquisition.ashx',//注意此文件必须与当前文件在同一目录下
+                    data: pd,
+                    dataType: "json",
+                    error: function (textstatus) {
+           
+                        alert("出错");
+                        $('#loading').html("");
+                        // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                    },
+                    success: function (result) {//result为任意定义的用于装载参数变量
+                        var obj = eval(result);
+                        table_style(obj);
+                    }
+                });
+            }
+        }
+    </script>
+   
+    
+    <script>
+        var ExcelData;
+        //向服务器获取最近数据
+        function RecentDay(day){
+            $('#loading').html("<div class='loader loader--spinningDisc' style='margin-left:45%'></div>");
+            var pd={"x":"RecentOrder","day":day};
+            $.ajax({
+                type: "post",
+                url: "../Handler.ashx",//注意此文件必须与当前文件在同一目录下
+                data:pd,
+                dataType: "json",
+                error: function (textstatus) {
+           
+                    alert('最近订单请求出错');
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    var obj = eval(result);
+                    
+                    table_style(obj)
+                }
+            });
+        }
+        //表格数据加载
+        function table_style(datanav){
+            ExcelData=datanav;
+            var tb = document.getElementById("table-2");
+            while(tb.rows.length>1){
+                tb.deleteRow(1);
+            }
+            for (var i = 0; i < datanav.length; i++) {
+                var attribute=document.createAttribute("id");
+                while(tb.rows.length>1){
+                    tb.deleteRow(1);
+                }
+                for (var i = 0; i < datanav.length; i++) {
+                    var str=datanav[i]["Address"]+"";
+                    var html="<tr ><td>"+datanav[i]["Number"]+")"+"</td><td>"+datanav[i]["Date"]+"</td><td>"+
+                        datanav[i]["Account"]+"</td><td>"+datanav[i]["Product"]+"</td><td>"+
+                        +datanav[i]["PayablePrice"]+"</td><td>￥"+
+                        datanav[i]["PaidPrice"]+"</td><td>"+
+                        str.substr(0,7)+"</td><td>"+datanav[i]["Label"]+"</td><td>"+
+                        "<label  onclick='ModifyOrder(this)' class='edit' name='"+datanav[i]["Key"]+"'>编辑</label><label onclick='DeleteOrder(this)'  name='"+datanav[i]["Key"]+"'>删除</label>"
+                    "</td></tr>"
+                    $('#table-2').append(html);
+                }
+                $('#loading').html("");
+            }
+        }
+        //导出excel数据
+        function ToExcel(){
+            var pd={"x":"ToExcel"};
+            $.ajax({
+                type: "post",
+                url: '../Handler.ashx',//注意此文件必须与当前文件在同一目录下
+                data: pd,
+                dataType: "json",
+                error: function (textstatus) {
+           
+                    alert("出错，可能账号权限未开通");
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    var obj = eval(result);
+                    var option={};
+                    option.fileName = 'excel'
+                    option.datas=[
+                      {
+                          sheetData:ExcelData,
+                          sheetName:'sheet',
+                          sheetFilter:['Date','Account','Product','Amount','PayablePrice','PaidPrice','GiftPrice','Contract','Address','Weight','PostPrice','Source'],
+                          sheetHeader:['日期','淘宝号','产品','数量','应付价','已付价','赠品价','联系方式','地址','重量','邮费','来源']
+                      }
+                    ];
+                    var toExcel=new ExportJsonExcel(option);
+                    toExcel.saveExcel();
+                }
+            });
+            
+        }
+    </script>
+    
+
+    <!--导出excel按钮样式↓-->
+    <style>
+        .next:before {
+            content: "\279C";
+        }
+
+
+        .button:before {
+            background: #ccc;
+            background: rgba(0,0,0,.1);
+            float: left;
+            width: 1em;
+            text-align: center;
+            font-size: 1.5em;
+            margin: 0 1em 0 -1em;
+            padding: 0 .2em;
+            -moz-box-shadow: 1px 0 0 rgba(0,0,0,.5), 2px 0 0 rgba(255,255,255,.5);
+            -webkit-box-shadow: 1px 0 0 rgba(0,0,0,.5), 2px 0 0 rgba(255,255,255,.5);
+            box-shadow: 1px 0 0 rgba(0,0,0,.5), 2px 0 0 rgba(255,255,255,.5);
+            -moz-border-radius: .15em 0 0 .15em;
+            -webkit-border-radius: .15em 0 0 .15em;
+            border-radius: .15em 0 0 .15em;
+            pointer-events: none;
+        }
+
+        .button {
+            display: inline-block;
+            white-space: nowrap;
+            background-color: #ddd;
+            background-image: -webkit-gradient(linear, left top, left bottom, from(#eee), to (#ccc));
+            background-image: -webkit-linear-gradient(top, #eee, #ccc);
+            background-image: -moz-linear-gradient(top, #eee, #ccc);
+            background-image: -ms-linear-gradient(top, #eee, #ccc);
+            background-image: -o-linear-gradient(top, #eee, #ccc);
+            background-image: linear-gradient(top, #eee, #ccc);
+            border: 1px solid #777;
+            padding: 0 1.5em;
+            margin: 0.5em;
+            font: bold 1em/2em Arial, Helvetica;
+            text-decoration: none;
+            color: #333;
+            text-shadow: 0 1px 0 rgba(255,255,255,.8);
+            -moz-border-radius: .2em;
+            -webkit-border-radius: .2em;
+            border-radius: .2em;
+            -moz-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+            -webkit-box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+            box-shadow: 0 0 1px 1px rgba(255,255,255,.8) inset, 0 1px 0 rgba(0,0,0,.3);
+            cursor:pointer
+        }
+
+            .button:hover {
+                background-color: #eee;
+                background-image: -webkit-gradient(linear, left top, left bottom, from(#fafafa), to(#ddd));
+                background-image: -webkit-linear-gradient(top, #fafafa, #ddd);
+                background-image: -moz-linear-gradient(top, #fafafa, #ddd);
+                background-image: -ms-linear-gradient(top, #fafafa, #ddd);
+                background-image: -o-linear-gradient(top, #fafafa, #ddd);
+                background-image: linear-gradient(top, #fafafa, #ddd);
+            }
+
+            .button:active {
+                -moz-box-shadow: 0 0 4px 2px rgba(0,0,0,.3) inset;
+                -webkit-box-shadow: 0 0 4px 2px rgba(0,0,0,.3) inset;
+                box-shadow: 0 0 4px 2px rgba(0,0,0,.3) inset;
+                position: relative;
+                top: 1px;
+            }
+
+            .button:focus {
+                outline: 0;
+                background: #fafafa;
+            }
+    </style>
+    <!--导出excel按钮样式上-->
+
+</head>
+<body style="width:97%;height:100%;text-align:center">
+    <!--订单页面头部操作块-->
+    <div class="box" style="text-align:left;margin-left:20px;height:40px;width:100%;margin-top:15px">
+        <button class="layui-btn"  onclick="AddOrder()">
+            <i class="layui-icon">&#xe608;</i> 添加订单
+        </button>
+        <button class="layui-btn" >
+             筛选订单
+        </button>
+        <a class="button next" style="float:right;" onclick="ToExcel()">导出Excel</a>
+        <input type="text" style="float:right;height:63%;margin-top:0.6%" placeholder="请输入联系人或联系电话" onkeydown="SearchPerson(this)" />
+        <input type="text" style="float:right;height:63%;margin-top:0.6%;margin-right:10px" placeholder="请输入搜索淘宝号" onkeydown="SearchOrder(this)" />
+    </div>
+    <div id="loading">
+        
+    </div>
+    <!--订单页面头部操作↑-->
+    <div style="width:100%;height:100%;margin-left:15px" >
+        <table lay-even id="table-2" style="width:100%;height:100%;" class="layui-table">
+            <thead style="width:100%;text-align:center">
+                <tr style="width:100%;">
+                    <th style="width:2%">序号</th>
+                    <th style="width:10%">日期</th>
+                    <th style="width:18%">淘宝号</th>
+                    <th style="width:20%">产品</th>
+                    <th style="width:5%">应付价</th>
+                    <th style="width:5%">实付价</th>
+                    <th style="width:12%">地址</th>
+                    <th style="width:8%">关心</th>
+                    <th style="width:10%">操作</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+</body>
+</html>

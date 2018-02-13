@@ -1,0 +1,194 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+	<meta charset="utf-8" />
+    <link href="../layui/css/layui.css" rel="stylesheet" />
+    <script src="../layui/layui.js"></script>
+    <script src="../js/jquery.min.js"></script>
+    <script>
+        var pro_id;
+        window.onload = function show() {
+            var Request = new Object();
+            Request = GetRequest();
+            pro_id = decodeURI(Request["id"]);
+            var obj;
+            if(pro_id!=="undefined") {
+                $('#conserve_pro').attr("disabled",true);
+                var pd={"x":"modify_pro","id":pro_id};
+                $.ajax({
+                    type: "post",
+                    url: '../../Handler.ashx',//注意此文件必须与当前文件在同一目录下
+                    data: pd,
+                    dataType: "json",
+                    error: function (textstatus) {
+           
+                        alert("出错，可能账号权限未开通");
+                        // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                    },
+                    success: function (result) {//result为任意定义的用于装载参数变量
+                        obj = eval(result);
+                        var pd={"x":"account"};
+                        $.ajax({
+                            type: "post",
+                            url: '../Handler.ashx',//注意此文件必须与当前文件在同一目录下
+                            data: pd,
+                            dataType: "json",
+                            error: function (textstatus) {
+                                $('#cost').attr("hidden",true);
+                                $('#name').val(obj[0].Product);$('#saleprice').val(obj[0].SalePrice);
+                                $('#cost').val(obj[0].Cost);$('#specification').val(obj[0].Specification);
+                                $('#activite').val(obj[0].Activite);$('#sort').val(obj[0].Sort);
+                                $('#inventory').val(obj[0].Inventory);$('#retailprice').val(obj[0].RetailPrice);
+                                $('#modify_pro').attr("disabled",false);
+                                
+                                // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                            },
+                            success: function (result) {//result为任意定义的用于装载参数变量
+                                var obj1 = eval(result);
+                                
+                                if(obj1["result"]!="sj476606729"){$('#cost').attr("hidden",true);}
+                                for(var i=0;i<obj.length;i++){
+                                    for(var j=0;j<obj[i].length;j++){
+                                        $('#name').val(obj[i][j].Product);$('#saleprice').val(obj[i][j].SalePrice);
+                                        $('#cost').val(obj[i][j].Cost);$('#specification').val(obj[i][j].Specification);
+                                        $('#activite').val(obj[i][j].Activite);$('#sort').val(obj[i][j].Sort);
+                                        $('#inventory').val(obj[i][j].Inventory);$('#retailprice').val(obj[i][j].RetailPrice);
+                                        $('#modify_pro').attr("disabled",false);
+                                    }
+                                }
+                                
+                                
+                            }
+                        });
+                        
+                    }
+                });
+            }
+        }
+        //修改产品数据
+        function Modifyproduct() {
+            var name = $('#name').val(); var saleprice = $('#saleprice').val();
+            var cost = $('#cost').val(); var specification = $('#specification').val();
+            var activite = $('#activite').val(); var sort = $('#sort').val();
+            var retailprice = $('#retailprice').val(); var inventory = $('#inventory').val();
+
+            var pd = { "x": "modify_pro_data", "name": name, "saleprice": saleprice, "cost": cost, "specification": specification, "activite": activite, "sort": sort, "inventory": inventory, "retailprice": retailprice, "id": pro_id };
+            $.ajax({
+                type: "post",
+                url: '../../Handler.ashx',//注意此文件必须与当前文件在同一目录下
+                data: pd,
+                dataType: "json",
+                error: function (textstatus) {
+
+                    alert(ttextstatus);
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    var obj = eval(result);
+                    //textstatus与返回参数对应
+                    if (obj.result == "修改成功") {
+                        var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                        parent.layer.close(index);
+                    } else alert(obj.result);
+                }
+            });
+        }
+        //保存产品
+        function CreatProduct() {
+
+            var name = $('#name').val();
+            var saleprice = $('#saleprice').val();
+            var cost = $('#cost').val();
+            var specification = $('#specification').val();
+            var activite = $('#activite').val();
+            var sort = $('#sort').val();
+            var inventory = $('#inventory').val();
+            var retailprice = $('#retailprice').val();
+            var pd = { "x": "CreateProduct", "name": name, "saleprice": saleprice, "cost": cost, "specification": specification, "activite": activite, "sort": sort, "retailprice": retailprice, "inventory": inventory };
+            $('#conserve_pro').attr("disabled", true);
+            $.ajax({
+                type: "post",
+                url: '../../Handler.ashx',//注意此文件必须与当前文件在同一目录下
+                data: pd,
+                dataType: "json",
+                error: function (textstatus) {
+
+                    alert(ttextstatus);
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    var obj = eval(result);
+                    $('#conserve_pro').attr("disabled", false);
+                    if (obj.result == "True") {
+                        var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                        parent.layer.close(index);
+                    } else alert('添加失败,请检查格式');
+
+                }
+            });
+        }
+    </script>
+
+    <script>
+        function closeproduct (){
+                var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                parent.layer.close(index); 
+        };
+    </script>
+    <!--定义文本框高度↓-->
+    <style>
+        div input{
+            height:30px
+        }
+    </style>
+    <!--定义文本框高度↑-->
+    <!--获得修改产品数据id↓-->
+    <script>
+    function GetRequest() {
+
+    var url =window.location.search; //获取url中"?"符后的字串
+    var theRequest = new Object();
+    if (url.indexOf("?") != -1) {
+
+    var str = url.substr(1);
+    strs = str.split("&");
+    for(var i = 0; i < strs.length; i ++) {
+
+    theRequest[strs[i].split("=")[0]]=(strs[i].split("=")[1]);
+    }
+
+    }
+    return theRequest;
+
+    }
+    </script>
+    <!--获得修改产品数据id↑-->
+
+</head>
+<body style="width:96%;">
+    <div style="width:90%;margin-left:20px;font-size:17px">
+        品名:<input type="text" id="name" /> 库存:<input type="text" value="0" style="width:10%" id="inventory" />
+        <br />
+        <br />
+        卖价:<input type="text" id="saleprice" /> 零售价:<input type="text" style="width:10%" value="0" id="retailprice" />
+        <br />
+        <br />
+        成本:<input type="text" id="cost" />
+        <br />
+        <br />
+        规格:<input type="text" id="specification" />
+        <br />
+        <br />
+        活动:<input type="text" id="activite" />
+        <br />
+        <br />
+        排序:<input type="text" id="sort" />
+        <br /><br />
+        <input type="button" id="conserve_pro" style="margin-left:2%;width:80px; float:left;" value="确定" onclick="CreatProduct()" />
+        <input type="button" style="margin-left:2%;width:80px;float:left" value="返回" onclick="closeproduct()" />
+        <input type="button" id="modify_pro" style="margin-left:2%;width:80px;float:left;" disabled="disabled" value="修改" onclick="Modifyproduct()" />
+    </div>
+</body>
+</html>

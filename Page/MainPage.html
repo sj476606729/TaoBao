@@ -1,0 +1,253 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>美美护肤养颜馆</title>
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/JavaScript.js"></script>
+    <link rel="stylesheet" href="./plugins/layui/css/layui.css" media="all">
+    <link rel="stylesheet" type="text/css" href="http://cdn.bootcss.com/font-awesome/4.6.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="./build/css/app.css" media="all">
+    <!--加载动画↓-->
+    <style>
+        .loader--spinningDisc {
+            border: solid 0.5em #9b59b6;
+            border-right-color: transparent;
+            border-left-color: transparent;
+            padding: 0.5em;
+            width: 1em;
+            height: 1em;
+            border-radius: 50%;
+            background: #3498db;
+            background-clip: content-box;
+            animation: spinDisc 1.5s linear infinite;
+        }
+
+        @keyframes spinDisc {
+            50% {
+                border-top-color: #3498db;
+                border-bottom-color: #3498db;
+                background-color: #2ecc71;
+            }
+
+            100% {
+                transform: rotate(1turn);
+            }
+        }
+    </style>
+    <!--加载动画↑-->
+    <!--显示隐藏加载动画↓-->
+    <script>
+        var _load_show = new Array(5);
+        function Load_show(number, e) {
+            if (_load_show[number] != true) {
+                $(e).css("visibility", "visible"); _load_show[number] = true;
+            }
+            
+        }
+        //window.onload = function Load_hidden() {
+        //    $('#loading').css("visibility", "hidden");
+        //}
+    </script>
+    <!--显示隐藏加载动画↑-->
+    <!--处理带参数的url并返回object↓-->
+    <script>
+
+  function GetRequest() {
+
+   var url = location.search; //获取url中"?"符后的字串
+
+   var theRequest = new Object();
+   if (url.indexOf("?") != -1) {
+
+      var str = url.substr(1);
+      strs = str.split("&");
+      for(var i = 0; i < strs.length; i ++) {
+          
+         theRequest[strs[i].split("=")[0]]=(strs[i].split("=")[1]);
+      }
+
+   }
+   return theRequest;
+   
+}
+
+    </script>
+    <!--处理带参数的url并返回object↑-->
+    <!--初始页面加载↓-->
+    <script>
+        window.onload = function show() {
+            var Request = new Object();
+            Request = GetRequest();
+            $('#account_name').html("<img src='http://m.zhengjinfan.cn/images/0.jpg' class='layui-nav-img' /> " + Request["account"]);
+            var pd = { "x": "1" };
+            $.ajax({
+                type: "post",
+                url: '../Handler.ashx',
+                data: pd,
+                dataType: "json",
+                error: function (textstatus) {
+
+                    alert(ttextstatus);
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    var obj = eval(result);
+                    $('#account_name').html("<img src='http://m.zhengjinfan.cn/images/0.jpg' class='layui-nav-img' /> " + obj.result);
+                }
+            });
+        }
+        
+    </script>
+    <!--初始页面加载↑-->
+    <!--清空账户↓-->
+    <script>
+        function empty_account() {
+                var pd = { "x": "empty_account" };
+                $.ajax({
+                    type: "post",
+                    url: '../Handler.ashx',//注意此文件必须与当前文件在同一目录下
+                    data: pd,
+                    dataType: "json",
+                    error: function (textstatus) {
+                        
+                        // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                    },
+                    success: function (result) {//result为任意定义的用于装载参数变量
+                        var obj = eval(result);
+                        //alert(obj.textstatus);//textstatus与返回参数对应
+                        //window.location.href  = "LogIn.html"
+                    }
+                });
+        }
+    </script>
+    <!--清空账户↑-->
+</head>
+
+<body>
+    <div class="layui-layout layui-layout-admin kit-layout-admin">
+        <div class="layui-header">
+            <div class="layui-logo">美美护肤养颜馆</div>
+            <div class="layui-logo kit-logo-mobile">K</div>
+            <ul class="layui-nav layui-layout-left kit-nav" kit-one-level>
+                <li class="layui-nav-item"><a href="javascript:;">控制台</a></li>
+                <li class="layui-nav-item"><a href="javascript:;">商品管理</a></li>
+            </ul>
+            <ul class="layui-nav layui-layout-right kit-nav">
+                <li class="layui-nav-item"><a href="javascript:window.open('https://myseller.taobao.com/home.htm')"> 店铺中心</a></li>
+                <li class="layui-nav-item">
+                    <a href="javascript:;" id="account_name">
+                        
+                    </a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="javascript:;">基本资料</a></dd>
+                        <dd><a href="javascript:;">安全设置</a></dd>
+                    </dl>
+                </li>
+                <li class="layui-nav-item"><a href="LogIn.html" onclick="empty_account()"><i class="fa fa-sign-out" aria-hidden="true"></i> 注销</a></li>
+            </ul>
+        </div>
+
+        <div class="layui-side layui-bg-black kit-side">
+            <div class="layui-side-scroll">
+                <div class="kit-side-fold"><i class="fa fa-navicon" aria-hidden="true"></i></div>
+                <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+                <ul class="layui-nav layui-nav-tree" lay-filter="kitNavbar" kit-navbar>
+                    <li class="layui-nav-item layui-nav-itemed">
+                        <a class="" href="javascript:;"><i class="fa fa-plug" aria-hidden="true"></i><span> 订单管理</span></a>
+                        <dl class="layui-nav-child">
+                            <dd  onclick="Load_show(0,this)">
+                                <a href="javascript:;" kit-target data-options="{url:'Page_Order.html',icon:'&#xe6c6;',title:'详情订单',id:'11'}">
+                                    <i class="layui-icon">&#xe6c6;</i><span > 详情订单</span></a>
+                            </dd>
+                            <dd><a href="javascript:;" data-url="OrderAnalyzing/OrderAnalyzing.html" data-icon="fa-user" data-title="订单分析" kit-target data-id='12'><i class="fa fa-user" aria-hidden="true"></i><span> 订单分析</span></a></dd>
+                            <dd><a href="javascript:;" data-url="Consignment/Consignment.html" data-icon="fa-user" data-title="订单发货" kit-target data-id='13'><i class="fa fa-user" aria-hidden="true"></i><span> 订单发货</span></a></dd>
+                            <dd><a href="javascript:;" data-url="../OperatePage/Snapshot/Snapshot.html" data-icon="fa-user" data-title="订单图片" kit-target data-id='14'><i class="fa fa-user" aria-hidden="true"></i><span> 订单图片</span></a></dd>
+                            <!--<dd>
+                                <a href="javascript:;" data-url="nav.html" data-icon="&#xe628;" data-title="导航栏" kit-target data-id='3'><i class="layui-icon">&#xe628;</i><span> 导航栏</span></a>
+                            </dd>
+                            <dd>
+                                <a href="javascript:;" data-url="list4.html" data-icon="&#xe614;" data-title="列表四" kit-target data-id='4'><i class="layui-icon">&#xe614;</i><span> 列表四</span></a>
+                            </dd>
+                            <dd>
+                                <a href="javascript:;" kit-target data-options="{url:'https://www.baidu.com',icon:'&#xe658;',title:'百度一下',id:'5'}"><i class="layui-icon">&#xe658;</i><span> 百度一下</span></a>
+                            </dd>-->
+                        </dl>
+                    </li>
+                    <li class="layui-nav-item">
+                        <a href="javascript:;"><i class="fa fa-plug" aria-hidden="true"></i><span> 客户维护</span></a>
+                        <dl class="layui-nav-child">
+                            <dd><a href="javascript:;" kit-target data-options="{url:'Buyer/Buyer.html',icon:'&#xe658;',title:'买家管理',id:'6'}"><i class="layui-icon">&#xe658;</i><span> 会员查看</span></a></dd>
+                            <!--<dd><a href="javascript:;" kit-target data-options="{url:'tab.html',icon:'&#xe658;',title:'TAB',id:'7'}"><i class="layui-icon">&#xe658;</i><span> 会员分析</span></a></dd>-->
+                            <!--<dd><a href="javascript:;" kit-target data-options="{url:'onelevel.html',icon:'&#xe658;',title:'OneLevel',id:'50'}"><i class="layui-icon">&#xe658;</i><span> OneLevel</span></a></dd>
+                            <dd><a href="javascript:;" kit-target data-options="{url:'app.html',icon:'&#xe658;',title:'App',id:'8'}"><i class="layui-icon">&#xe658;</i><span> app.js主入口</span></a></dd>-->
+                        </dl>
+                    </li>
+                    <li class="layui-nav-item">
+                        <a href="javascript:;" data-url="/components/table/table.html" data-name="table" kit-loader><i class="fa fa-plug" aria-hidden="true"></i><span> 产品管理</span></a>
+                        <dl class="layui-nav-child">
+                            <dd><a href="javascript:;" kit-target data-options="{url:'Product/Product.html',icon:'&#xe658;',title:'产品查看',id:'31'}"><i class="layui-icon">&#xe658;</i><span> 产品查看</span></a></dd>
+                            <dd><a href="javascript:;" kit-target data-options="{url:'ProductData/BushuiTaohe.html',icon:'&#xe658;',title:'补水套盒',id:'32'}"><i class="layui-icon">&#xe658;</i><span> 补水套盒</span></a></dd>
+                            <dd><a href="javascript:;" kit-target data-options="{url:'ProductData/BushuiDanpin.html',icon:'&#xe658;',title:'补水单品',id:'33'}"><i class="layui-icon">&#xe658;</i><span> 补水单品</span></a></dd>
+                            <dd><a href="javascript:;" kit-target data-options="{url:'ProductData/MeibaiTaohe.html',icon:'&#xe658;',title:'美白套盒',id:'34'}"><i class="layui-icon">&#xe658;</i><span> 美白套盒</span></a></dd>
+                            <dd><a href="javascript:;" kit-target data-options="{url:'ProductData/MeibaiDanpin.html',icon:'&#xe658;',title:'美白单品',id:'35'}"><i class="layui-icon">&#xe658;</i><span> 美白单品</span></a></dd>
+                            <dd><a href="javascript:;" kit-target data-options="{url:'ProductData/XiuhuXilie.html',icon:'&#xe658;',title:'修护系列',id:'36'}"><i class="layui-icon">&#xe658;</i><span> 修护系列</span></a></dd>
+                            <dd><a href="javascript:;" kit-target data-options="{url:'ProductData/QingchunDingge.html',icon:'&#xe658;',title:'青春定格',id:'37'}"><i class="layui-icon">&#xe658;</i><span> 青春定格</span></a></dd>
+                            <dd><a href="javascript:;" kit-target data-options="{url:'ProductData/Diemeishi.html',icon:'&#xe658;',title:'蝶美时',id:'38'}"><i class="layui-icon">&#xe658;</i><span> 蝶美时</span></a></dd>
+                            <dd><a href="javascript:;" kit-target data-options="{url:'ProductData/Jiemianru.html',icon:'&#xe658;',title:'洁面乳',id:'39'}"><i class="layui-icon">&#xe658;</i><span> 洁面乳</span></a></dd>
+                        </dl>
+                    </li>   
+                    
+                    <li class="layui-nav-item">
+                        <a href="javascript:;" data-url="/views/form.html" data-name="form" kit-loader><i class="fa fa-plug" aria-hidden="true"></i><span> 店铺概况</span></a>
+                        <dl class="layui-nav-child">
+                            <dd><a href="javascript:;" kit-target data-options="{url:'../OperatePage/ActiviteImage/ActiviteImage.html',icon:'&#xe658;',title:'活动图',id:'41'}"><i class="layui-icon">&#xe658;</i><span>活动图</span></a></dd>
+                            <dd><a href="javascript:;" kit-target data-options="{url:'ThisMonth/ThisMonth.html',icon:'&#xe658;',title:'月度概况',id:'42'}"><i class="layui-icon">&#xe658;</i><span> 月度概况</span></a></dd>
+                        </dl>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="layui-body" id="container">
+            <!-- 内容主体区域 -->
+            <div style="padding: 15px;">主体内容加载中,请稍等...</div>
+        </div>
+
+        <div class="layui-footer">
+            <!-- 底部固定区域 -->
+            <a href="https://myseller.taobao.com/home.htm" style="float:left">美美护肤养颜馆，点击进入</a> 
+            <div id="loading" style="float:left;margin-left:2%;visibility:hidden" class='loader loader--spinningDisc'></div>
+        </div>
+    </div>
+
+    <script src="./plugins/layui/layui.js"></script>
+    <script>
+        var message;
+        layui.config({
+            base: 'build/js/'
+        }).use(['app', 'message'], function() {
+            var app = layui.app,
+                $ = layui.jquery,
+                layer = layui.layer;
+            //将message设置为全局以便子页面调用
+            message = layui.message;
+            //主入口
+            app.set({
+                type: 'iframe'
+            }).init();
+            $('#pay').on('click', function() {
+                layer.open({
+                    title: false,
+                    type: 1,
+                    content: '<div>等待更新……</div>',
+                    area: ['500px', '250px'],
+                    shadeClose: true
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

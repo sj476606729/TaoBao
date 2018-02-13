@@ -1,0 +1,209 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+	<meta charset="utf-8" />
+    <script src="../../js/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/normalize.css" />
+    <link rel="stylesheet" type="text/css" href="css/default.css">
+    <link href="../../layui/css/layui.css" rel="stylesheet" />
+    <script src="../../layui/layui.js"></script>
+    <script src="js/Chart.js"></script>
+    <script>
+        var _data = new Array(8);
+        var month_data;
+        var Buyer_dataname=new Array(15);
+        var Buyer_datavalue=new Array(15);
+        var Buyer_datacolor=new Array(15);
+        for(var i=0;i<Buyer_datacolor.length;i++){
+            Buyer_datacolor[i]="#46BFBD";Buyer_datavalue[i]=0;
+        }
+        //加载分析数据
+        window.onload = function () {
+            var pd={"x":"YearChart"};
+            $.ajax({
+                type: "post",
+                url: '../../DataAcquisition.ashx',//注意此文件必须与当前文件在同一目录下
+                data: pd,
+                dataType: "json",
+                error: function (textstatus) {
+
+                    alert("出错Year");
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    obj = eval(result); var i = 0;
+                    for (var key in obj) {
+                        _data[i] = key; _data[i + 1] = obj[key]; i = i + 2; 
+                    }
+                    YearChart();
+                }
+            });
+            pd = { "x": "MonthChart" };
+            $.ajax({
+                type: "post",
+                url: '../../DataAcquisition.ashx',//注意此文件必须与当前文件在同一目录下
+                data: pd,
+                dataType: "json",
+                error: function (textstatus) {
+
+                    alert("出错Month");
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    month_data = eval(result);
+                    MonthChart();
+                }
+            });
+            pd = { "x": "BuyerLabel" };
+            $.ajax({
+                type: "post",
+                url: '../../DataAcquisition.ashx',//注意此文件必须与当前文件在同一目录下
+                data: pd,
+                dataType: "json",
+                error: function (textstatus) {
+
+                    alert("出错BuyerLabel");
+                    
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    var buyer_data = eval(result);
+                    var i=0;
+                    for (var data in buyer_data) {
+                        Buyer_dataname[i] = data;
+                        Buyer_datavalue[i] = buyer_data[data] 
+                        if(data=="产品损坏"||data=="使用异样"){Buyer_datacolor[i]="#F7464A";}
+                        i++;
+                    }
+                    BuyerChart();
+                }
+            });
+            
+        }
+        //年度折线图
+        function YearChart() {
+            var ctx = document.getElementById("canvas").getContext("2d");
+            var lineChartData = {
+
+                labels: [_data[0], _data[2], _data[4], _data[6]],
+                datasets: [
+                    {
+                        label: "My First dataset",
+                        fillColor: "rgba(220,220,220,0.2)",
+                        strokeColor: "rgba(22,220,220,100)",
+                        pointColor: "rgba(22,220,220,1)",
+                        pointStrokeColor: "#fff",
+                        pointHighlightFill: "#fff",
+                        pointHighlightStroke: "rgba(220,220,220,1)",
+                        data: [_data[1], _data[3], _data[5], _data[7]]
+                    },
+                ]
+
+            }
+            window.myLine = new Chart(ctx).Line(lineChartData, {
+                responsive: true
+            });
+        }
+        //月度折线图
+        function MonthChart() {
+            var ctx = document.getElementById("canvas1").getContext("2d");
+            var lineChartData = {
+
+                labels: ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月" ],
+                datasets: [
+                    {
+                        label: "My First dataset",
+                        fillColor: "rgba(220,220,220,0.2)",
+                        strokeColor: "rgba(22,220,220,100)",
+                        pointColor: "rgba(22,220,220,1)",
+                        pointStrokeColor: "#fff",
+                        pointHighlightFill: "#fff",
+                        pointHighlightStroke: "rgba(220,220,220,1)",
+                        data: [month_data[0]["One"], month_data[0]["Two"], month_data[0]["Three"], month_data[0]["Four"], month_data[0]["Five"], month_data[0]["Six"], month_data[0]["Seven"], month_data[0]["Eight"], month_data[0]["Nine"], month_data[0]["Ten"], month_data[0]["Eleven"], month_data[0]["Twelve"] ]
+                    },
+                    {
+                        label: "My First dataset",
+                        fillColor: "rgba(220,220,22,0.2)",
+                        strokeColor: "rgba(22,220,220,100)",
+                        pointColor: "rgba(22,220,220,1)",
+                        pointStrokeColor: "#fff",
+                        pointHighlightFill: "#fff",
+                        pointHighlightStroke: "rgba(220,220,220,1)",
+                        data: [month_data[1]["One"], month_data[1]["Two"], month_data[1]["Three"], month_data[1]["Four"], month_data[1]["Five"], month_data[1]["Six"], month_data[1]["Seven"], month_data[1]["Eight"], month_data[1]["Nine"], month_data[1]["Ten"], month_data[1]["Eleven"], month_data[1]["Twelve"]]
+                    },
+                ]
+
+            }
+            window.myLine = new Chart(ctx).Line(lineChartData, {
+                responsive: true
+            });
+        }
+        //买家关心分布
+        function BuyerChart() {
+            var pieData = [
+				{value: Buyer_datavalue[0],color: "#F7464A",highlight: "#FF5A5E",label: Buyer_dataname[0]},
+				{value: Buyer_datavalue[1],color:Buyer_datacolor[1] ,highlight: Buyer_datacolor[1],label: Buyer_dataname[1]},
+				{value: Buyer_datavalue[2],color: Buyer_datacolor[2],highlight: Buyer_datacolor[2],label: Buyer_dataname[2]},
+				{value: Buyer_datavalue[3],color: Buyer_datacolor[3],highlight: Buyer_datacolor[3],label: Buyer_dataname[3]},
+				{value: Buyer_datavalue[4],color: Buyer_datacolor[4],highlight: Buyer_datacolor[4],label: Buyer_dataname[4]},
+                {value: Buyer_datavalue[5],color:Buyer_datacolor[5],highlight: Buyer_datacolor[5],label: Buyer_dataname[5]},
+                {value: Buyer_datavalue[6],color:Buyer_datacolor[6],highlight: Buyer_datacolor[6],label: Buyer_dataname[6]},
+                {value: Buyer_datavalue[7],color:Buyer_datacolor[7],highlight: Buyer_datacolor[7],label: Buyer_dataname[7]},
+                {value: Buyer_datavalue[8],color:Buyer_datacolor[8],highlight: Buyer_datacolor[8],label: Buyer_dataname[8]},
+                {value: Buyer_datavalue[9],color:Buyer_datacolor[9],highlight: Buyer_datacolor[9],label: Buyer_dataname[9]},
+                {value: Buyer_datavalue[10],color:Buyer_datacolor[10],highlight: Buyer_datacolor[10],label: Buyer_dataname[10]},
+                {value: Buyer_datavalue[11],color:Buyer_datacolor[11],highlight: Buyer_datacolor[11],label: Buyer_dataname[11]},
+                {value: Buyer_datavalue[12],color:Buyer_datacolor[12],highlight: Buyer_datacolor[12],label: Buyer_dataname[12]},
+                {value: Buyer_datavalue[13],color:Buyer_datacolor[13],highlight: Buyer_datacolor[13],label: Buyer_dataname[13]},
+                {value: Buyer_datavalue[14],color:Buyer_datacolor[14],highlight: Buyer_datacolor[14],label: Buyer_dataname[14]},
+
+            ];
+            var ctx = document.getElementById("chart-area").getContext("2d");
+            window.myPie = new Chart(ctx).Pie(pieData);
+        }
+    </script>
+
+</head>
+<body>
+    <div class="htmleaf-container" style=";margin-left:20px">
+        <header class="htmleaf-header">
+            <div >全年销售额趋势图</div>
+        </header>
+        <div class="htmleaf-content">
+            <div style="width:100%;">
+                <div>
+                    <canvas id="canvas" height="300" width="1000"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    <div class="htmleaf-container" style="margin-left:20px">
+        <header class="htmleaf-header">
+            <div>今年和去年月度销售额趋势图</div>
+        </header>
+        <div class="htmleaf-content">
+            <div style="width:100%;">
+                <div>
+                    <canvas id="canvas1" height="300" width="1000"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="width:100%;text-align:center">
+        <div class="htmleaf-container" style="">
+            <header class="htmleaf-header">
+                <div>90天买家关注重心</div>
+            </header>
+            <div class="htmleaf-content">
+                <div id="canvas-holder">
+                    <canvas id="chart-area" width="300" height="300" />
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

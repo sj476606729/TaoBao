@@ -1,0 +1,392 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+    <script src="../../js/jquery.min.js"></script>
+	<meta charset="utf-8" />
+    <link href="../../layui/css/layui.css" rel="stylesheet" />
+    <script src="../../layui/layui.js"></script>
+    <link href="../../css/Currency.css" rel="stylesheet" />
+    <script src="js/Chart.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/normalize.css" />
+    <link rel="stylesheet" type="text/css" href="css/default.css">
+
+    <script>
+        window.onload=function(){
+            GetProdcut();
+            
+        }
+    </script>
+    <!--向服务器获取数据↓-->
+    <script>
+        var Fangke_z=new Array(60);
+        var Liulan_z = new Array(60);
+        var Jiagou_z = new Array(60);
+        var Shoucang_z = new Array(60);
+        var Tingliu_z = new Array(60);
+        var Date_z = new Array(60);
+        for (var i = 0; i < 60; i++) {//初始化
+            Fangke_z[i] = 0; Liulan_z[i] = 0; Date_z[i] = ""; Jiagou_z[i] = 0;
+            Shoucang_z[i] = 0; Tingliu_z[i] = 0;
+        }
+        //向服务器获取最近数据
+        function GetProdcut(){
+            $('#loading').html("<div class='loader loader--spinningDisc' style='margin-left:45%'></div>");
+            var pd={"x":"GetProductData","id":"青春定格"};
+            $.ajax({
+                type: "post",
+                url: "../../Ashx/Product.ashx",//注意此文件必须与当前文件在同一目录下
+                data:pd,
+                dataType: "json",
+                error: function (textstatus) {
+           
+                    alert('出错product');
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    var obj=eval(result);
+                    table_style(obj)
+                }
+            });
+        }
+        //表格数据加载
+        function table_style(datanav){
+            var tb = document.getElementById("table-2");
+            while(tb.rows.length>1){
+                tb.deleteRow(1);
+            }
+            for (var i = 0; i < datanav.length; i++) {
+                Fangke_z[i] = datanav[i]["Fangke"];
+                var str=datanav[i]["Date"]+"";
+                Date_z[i] = str.substr(str.length - 2, 2);
+                Liulan_z[i] = datanav[i]["liulan"];
+                Jiagou_z[i] = datanav[i]["jiagou"];
+                Shoucang_z[i] = datanav[i]["shoucang"];
+                Tingliu_z[i] = datanav[i]["tingliu"];
+                var html="<tr id='"+datanav[i]["Date"]+ "'><td>"+datanav[i]["Number"]+")"+"</td><td>"+datanav[i]["Date"]+"</td><td>"+
+                    datanav[i]["Fangke"]+"</td><td>"+datanav[i]["liulan"]+"</td><td>"+datanav[i]["jiagou"]+"</td><td>"+
+                    datanav[i]["shoucang"] + "</td><td>" + datanav[i]["tingliu"] + "</td><td>" + "<label  onclick='modifyproduct(this)' class='edit'>编辑</label><label onclick='delete_pro(this)'>删除</label>"
+                    "</td></tr>"
+                $('#table-2').append(html);
+            }
+            FangkeLiulan();
+            JiagouShoucang(); Tingliu();
+            $('#loading').remove();
+        }
+    </script>
+    <script>
+        var OldDate,tablehtml;
+        //添加数据
+        function AddData(){
+            var date=$('#date').val();var fangke=$('#fangke').val();var liulan=$('#liulan').val();
+            var jiagou=$('#jiagou').val();var shoucang=$('#shoucang').val();var tingliu=$('#tingliu').val();
+            var pd = { "x": "添加每日数据", "date": date, "fangke": fangke, "liulan": liulan, "jiagou": jiagou, "shoucang": shoucang, "tingliu": tingliu, "id": "青春定格" };
+            $.ajax({
+                type: "post",
+                url: '../../Ashx/Product.ashx',//注意此文件必须与当前文件在同一目录下
+                data: pd,
+                dataType: "json",
+                error: function (textstatus) {
+           
+                    alert('出错');
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    var obj = eval(result);
+                    if(obj.result=="True")
+                    {
+                        alert('添加成功');GetProdcut();
+                        $('#date').val('');$('#fangke').val('');$('#liulan').val('');
+                        $('#jiagou').val('');$('#shoucang').val('');$('#tingliu').val('');
+                    }else{
+                        alert('添加失败');
+                    }
+                }
+            });
+        };
+        //修改数据
+        function modifyproduct(e){
+            var value=$(e).parent().parent().children().eq(1).html();
+            $("#date").val(value);OldDate=value;
+            value=$(e).parent().parent().children().eq(2).html();
+            $("#fangke").val(value);
+            value=$(e).parent().parent().children().eq(3).html();
+            $("#liulan").val(value);
+            value=$(e).parent().parent().children().eq(4).html();
+            $("#jiagou").val(value);
+            value=$(e).parent().parent().children().eq(5).html();
+            $("#shoucang").val(value);
+            value=$(e).parent().parent().children().eq(6).html();
+            $("#tingliu").val(value);
+            $("#add").attr("disabled",true);$('#update').attr("disabled",false);
+        };
+        //更新每日数据
+        function UpdateData(){
+            var date=$('#date').val();var fangke=$('#fangke').val();var liulan=$('#liulan').val();
+            var jiagou=$('#jiagou').val();var shoucang=$('#shoucang').val();var tingliu=$('#tingliu').val();
+            var pd = { "x": "更新每日数据", "date": date, "fangke": fangke, "liulan": liulan, "jiagou": jiagou, "shoucang": shoucang, "tingliu": tingliu, "id": "青春定格", "OldDate": OldDate };
+            $.ajax({
+                type: "post",
+                url: '../../Ashx/Product.ashx',//注意此文件必须与当前文件在同一目录下
+                data: pd,
+                dataType: "json",
+                error: function (textstatus) {
+           
+                    alert('出错');
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    var obj = eval(result);
+                    if(obj.result=="True"){alert('更新成功');}else{alert('更新失败');}
+                    $("#"+OldDate).children().eq(1).html(date);
+                    $("#"+OldDate).children().eq(2).html(fangke);
+                    $("#"+OldDate).children().eq(3).html(liulan);
+                    $("#"+OldDate).children().eq(4).html(jiagou);
+                    $("#"+OldDate).children().eq(5).html(shoucang);
+                    $("#"+OldDate).children().eq(6).html(tingliu);
+                    $('#update').attr("disabled",true);$('#add').attr("disabled",false);
+                    $('#date').val('');$('#fangke').val('');$('#liulan').val('');
+                    $('#jiagou').val('');$('#shoucang').val('');$('#tingliu').val('');
+                }
+            });
+        }
+        //删除数据
+        function delete_pro(e) {
+            if (confirm("确定删除此条数据吗?") == false) return;
+            var date=$(e).parent().parent().attr("id");
+            var pd = { "x": "删除每日数据", "id": "青春定格", "date": date };
+            $.ajax({
+                type: "post",
+                url: '../../Ashx/Product.ashx',//注意此文件必须与当前文件在同一目录下
+                data: pd,
+                dataType: "json",
+                error: function (textstatus) {
+           
+                    alert('出错');
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    var obj = eval(result);
+                    if(obj.result=="True"){alert('删除成功');$(e).parent().parent().remove();}else{alert('删除失败');}
+                    
+                }
+            });
+        }
+        //隐藏显示表格
+        function HiddenShow(e){
+            if($(e).val()=="0"){
+                tablehtml=$('#table').html();
+                $('#table-2').remove();$(e).val('1');
+            }else{
+                $('#table').html(tablehtml);$(e).val('0');
+            }
+        }
+    </script>
+    <script>
+        //访客和浏览量折线图
+        function FangkeLiulan() {
+            var ctx = document.getElementById("canvas1").getContext("2d");
+            var lineChartData = {
+               
+                labels: [Date_z[39], Date_z[38], Date_z[37], Date_z[36], Date_z[35], Date_z[34], Date_z[33], Date_z[32]
+                        , Date_z[31], Date_z[30], Date_z[29], Date_z[28], Date_z[27], Date_z[26], Date_z[25], Date_z[24], Date_z[23]
+                        , Date_z[22], Date_z[21], Date_z[20], Date_z[19], Date_z[18], Date_z[17], Date_z[16], Date_z[15], Date_z[14]
+                        , Date_z[13], Date_z[12], Date_z[11], Date_z[10], Date_z[9], Date_z[8], Date_z[7], Date_z[6], Date_z[5]
+                        , Date_z[4], Date_z[3], Date_z[2], Date_z[1], Date_z[0]],
+                datasets: [
+                    {
+                        label: "My First dataset",
+                        fillColor: "rgba(220,220,220,0.2)",
+                        strokeColor: "rgba(22,220,220,100)",
+                        pointColor: "rgba(22,220,220,1)",
+                        pointStrokeColor: "#fff",
+                        pointHighlightFill: "#fff",
+                        pointHighlightStroke: "rgba(220,220,220,1)",
+                        data: [Liulan_z[39], Liulan_z[38], Liulan_z[37], Liulan_z[36], Liulan_z[35], Liulan_z[34], Liulan_z[33], Liulan_z[32]
+                        , Liulan_z[31], Liulan_z[30], Liulan_z[29], Liulan_z[28], Liulan_z[27], Liulan_z[26], Liulan_z[25], Liulan_z[24], Liulan_z[23]
+                        , Liulan_z[22], Liulan_z[21], Liulan_z[20], Liulan_z[19], Liulan_z[18], Liulan_z[17], Liulan_z[16], Liulan_z[15], Liulan_z[14]
+                        , Liulan_z[13], Liulan_z[12], Liulan_z[11], Liulan_z[10], Liulan_z[9], Liulan_z[8], Liulan_z[7], Liulan_z[6], Liulan_z[5]
+                        , Liulan_z[4], Liulan_z[3], Liulan_z[2], Liulan_z[1], Liulan_z[0]]
+                       
+                    },
+                    {
+                        label: "My First dataset",
+                        fillColor: "rgba(220,220,22,0.2)",
+                        strokeColor: "rgba(22,220,22,100)",
+                        pointColor: "rgba(22,220,22,1)",
+                        pointStrokeColor: "#fff",
+                        pointHighlightFill: "#fff",
+                        pointHighlightStroke: "rgba(220,220,220,1)",
+                        data: [Fangke_z[39], Fangke_z[38], Fangke_z[37], Fangke_z[36], Fangke_z[35], Fangke_z[34], Fangke_z[33], Fangke_z[32]
+                        , Fangke_z[31], Fangke_z[30], Fangke_z[29], Fangke_z[28], Fangke_z[27], Fangke_z[26], Fangke_z[25], Fangke_z[24], Fangke_z[23]
+                        , Fangke_z[22], Fangke_z[21], Fangke_z[20], Fangke_z[19], Fangke_z[18], Fangke_z[17], Fangke_z[16], Fangke_z[15], Fangke_z[14]
+                        , Fangke_z[13], Fangke_z[12], Fangke_z[11], Fangke_z[10], Fangke_z[9], Fangke_z[8], Fangke_z[7], Fangke_z[6], Fangke_z[5]
+                        , Fangke_z[4], Fangke_z[3], Fangke_z[2], Fangke_z[1], Fangke_z[0]]
+
+                    },
+                ]
+
+            }
+            window.myLine = new Chart(ctx).Line(lineChartData, {
+                responsive: true
+            });
+        }
+        //加购收藏折线图
+        function JiagouShoucang() {
+            var ctx = document.getElementById("canvas2").getContext("2d");
+            var lineChartData = {
+
+                labels: [Date_z[39], Date_z[38], Date_z[37], Date_z[36], Date_z[35], Date_z[34], Date_z[33], Date_z[32]
+                        , Date_z[31], Date_z[30], Date_z[29], Date_z[28], Date_z[27], Date_z[26], Date_z[25], Date_z[24], Date_z[23]
+                        , Date_z[22], Date_z[21], Date_z[20], Date_z[19], Date_z[18], Date_z[17], Date_z[16], Date_z[15], Date_z[14]
+                        , Date_z[13], Date_z[12], Date_z[11], Date_z[10], Date_z[9], Date_z[8], Date_z[7], Date_z[6], Date_z[5]
+                        , Date_z[4], Date_z[3], Date_z[2], Date_z[1], Date_z[0]],
+                datasets: [
+                    {
+                        label: "My First dataset",
+                        fillColor: "rgba(220,220,220,0.2)",
+                        strokeColor: "rgba(22,220,220,100)",
+                        pointColor: "rgba(22,220,220,1)",
+                        pointStrokeColor: "#fff",
+                        pointHighlightFill: "#fff",
+                        pointHighlightStroke: "rgba(220,220,220,1)",
+                        data: [Jiagou_z[39], Jiagou_z[38], Jiagou_z[37], Jiagou_z[36], Jiagou_z[35], Jiagou_z[34], Jiagou_z[33], Jiagou_z[32]
+                        , Jiagou_z[31], Jiagou_z[30], Jiagou_z[29], Jiagou_z[28], Jiagou_z[27], Jiagou_z[26], Jiagou_z[25], Jiagou_z[24], Jiagou_z[23]
+                        , Jiagou_z[22], Jiagou_z[21], Jiagou_z[20], Jiagou_z[19], Jiagou_z[18], Jiagou_z[17], Jiagou_z[16], Jiagou_z[15], Jiagou_z[14]
+                        , Jiagou_z[13], Jiagou_z[12], Jiagou_z[11], Jiagou_z[10], Jiagou_z[9], Jiagou_z[8], Jiagou_z[7], Jiagou_z[6], Jiagou_z[5]
+                        , Jiagou_z[4], Jiagou_z[3], Jiagou_z[2], Jiagou_z[1], Jiagou_z[0]]
+
+                    },
+                    {
+                        label: "My First dataset",
+                        fillColor: "rgba(220,220,22,0.2)",
+                        strokeColor: "rgba(22,220,22,100)",
+                        pointColor: "rgba(22,220,22,1)",
+                        pointStrokeColor: "#fff",
+                        pointHighlightFill: "#fff",
+                        pointHighlightStroke: "rgba(220,220,220,1)",
+                        data: [Shoucang_z[39], Shoucang_z[38], Shoucang_z[37], Shoucang_z[36], Shoucang_z[35], Shoucang_z[34], Shoucang_z[33], Shoucang_z[32]
+                        , Shoucang_z[31], Shoucang_z[30], Shoucang_z[29], Shoucang_z[28], Shoucang_z[27], Shoucang_z[26], Shoucang_z[25], Shoucang_z[24], Shoucang_z[23]
+                        , Shoucang_z[22], Shoucang_z[21], Shoucang_z[20], Shoucang_z[19], Shoucang_z[18], Shoucang_z[17], Shoucang_z[16], Shoucang_z[15], Shoucang_z[14]
+                        , Shoucang_z[13], Shoucang_z[12], Shoucang_z[11], Shoucang_z[10], Shoucang_z[9], Shoucang_z[8], Shoucang_z[7], Shoucang_z[6], Shoucang_z[5]
+                        , Shoucang_z[4], Shoucang_z[3], Shoucang_z[2], Shoucang_z[1], Shoucang_z[0]]
+
+                    },
+                ]
+
+            }
+            window.myLine = new Chart(ctx).Line(lineChartData, {
+                responsive: true
+            });
+        }
+        //停留时长折线图
+        function Tingliu() {
+            var ctx = document.getElementById("canvas3").getContext("2d");
+            var lineChartData = {
+
+                labels: [Date_z[39], Date_z[38], Date_z[37], Date_z[36], Date_z[35], Date_z[34], Date_z[33], Date_z[32]
+                        , Date_z[31], Date_z[30], Date_z[29], Date_z[28], Date_z[27], Date_z[26], Date_z[25], Date_z[24], Date_z[23]
+                        , Date_z[22], Date_z[21], Date_z[20], Date_z[19], Date_z[18], Date_z[17], Date_z[16], Date_z[15], Date_z[14]
+                        , Date_z[13], Date_z[12], Date_z[11], Date_z[10], Date_z[9], Date_z[8], Date_z[7], Date_z[6], Date_z[5]
+                        , Date_z[4], Date_z[3], Date_z[2], Date_z[1], Date_z[0]],
+                datasets: [
+                    {
+                        label: "My First dataset",
+                        fillColor: "rgba(220,220,220,0.2)",
+                        strokeColor: "rgba(22,220,220,100)",
+                        pointColor: "rgba(22,220,220,1)",
+                        pointStrokeColor: "#fff",
+                        pointHighlightFill: "#fff",
+                        pointHighlightStroke: "rgba(220,220,220,1)",
+                        data: [Tingliu_z[39], Tingliu_z[38], Tingliu_z[37], Tingliu_z[36], Tingliu_z[35], Tingliu_z[34], Tingliu_z[33], Tingliu_z[32]
+                        , Tingliu_z[31], Tingliu_z[30], Tingliu_z[29], Tingliu_z[28], Tingliu_z[27], Tingliu_z[26], Tingliu_z[25], Tingliu_z[24], Tingliu_z[23]
+                        , Tingliu_z[22], Tingliu_z[21], Tingliu_z[20], Tingliu_z[19], Tingliu_z[18], Tingliu_z[17], Tingliu_z[16], Tingliu_z[15], Tingliu_z[14]
+                        , Tingliu_z[13], Tingliu_z[12], Tingliu_z[11], Tingliu_z[10], Tingliu_z[9], Tingliu_z[8], Tingliu_z[7], Tingliu_z[6], Tingliu_z[5]
+                        , Tingliu_z[4], Tingliu_z[3], Tingliu_z[2], Tingliu_z[1], Tingliu_z[0]]
+
+                    },
+                ]
+
+            }
+            window.myLine = new Chart(ctx).Line(lineChartData, {
+                responsive: true
+            });
+        }
+    </script>
+
+    
+</head>
+<body style="height:100%;width:96% ;margin-left:2%">
+    <div class="box" style="width:100%;height:10%;margin-top:15px">
+        <input id="date" type="text" style="font-size:18px;width:10%;" placeholder="日期" />
+        <input id="fangke" type="text" style="font-size:18px;width:5%"placeholder="访客" />
+        <input id="liulan" type="text" style="font-size:18px;width:5%"placeholder="浏览量" />
+        <input id="jiagou" type="text" style="font-size:18px;width:5%"placeholder="加购数" />
+        <input id="shoucang" type="text" style="font-size:18px;width:5%"placeholder="收藏人数" />
+        <input id="tingliu" type="text" style="font-size:18px;width:6%"placeholder="停留时长" />
+        <button class="layui-btn" onclick="AddData()" id="add">
+            <i class="layui-icon">&#xe608;</i> 添加数据
+        </button>
+        <button class="layui-btn" id="update" onclick="UpdateData()" style="" disabled="disabled" >
+             更新数据
+        </button>
+        <button class="layui-btn" id="update" onclick="HiddenShow(this)" value="0" style="">
+            隐藏表格
+        </button>
+    </div>
+    <div style="width:100%;" id="loading"></div>
+    <div style="width:100%;height:100%" id="table">
+        <table lay-even class="layui-table" id="table-2" style="width:100%;height:100%;">
+            <thead style="width:100%">
+                <tr style="width:100%;">
+                    <th style="width:2%">序号</th>
+                    <th style="width:20%">日期</th>
+                    <th style="width:5%">访客</th>
+                    <th style="width:5%">浏览量</th>
+                    <th style="width:5%">加购数</th>
+                    <th style="width:5%">收藏数</th>
+                    <th style="width:6%">停留时长</th>
+                    <th style="width:8%">操作</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+    <div class="htmleaf-container" style="margin-left:20px">
+        <header class="htmleaf-header">
+            <div>访客和浏览量折线图</div>
+        </header>
+        <div class="htmleaf-content">
+            <div style="width:100%;">
+                <div>
+                    <canvas id="canvas1" height="400" width="2000"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="htmleaf-container" style="margin-left:20px">
+        <header class="htmleaf-header">
+            <div>加购数和收藏人数折线图</div>
+        </header>
+        <div class="htmleaf-content">
+            <div style="width:100%;">
+                <div>
+                    <canvas id="canvas2" height="400" width="2000"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="htmleaf-container" style="margin-left:20px">
+        <header class="htmleaf-header">
+            <div>停留时长折线图</div>
+        </header>
+        <div class="htmleaf-content">
+            <div style="width:100%;">
+                <div>
+                    <canvas id="canvas3" height="400" width="2000"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

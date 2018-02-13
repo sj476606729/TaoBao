@@ -1,0 +1,119 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+	<meta charset="utf-8" />
+    <script src="../../js/jquery.min.js"></script>
+    <meta charset="utf-8" />
+    <link href="../../layui/css/layui.css" rel="stylesheet" />
+    <script src="../../layui/layui.js"></script>
+    <script>
+        window.onload=function(){
+            GetData()
+        }
+    </script>
+    <!--向服务器获取数据↓-->
+    <script>
+        //向服务器获取最近数据
+        function GetData(){
+            $('#loading').html("<div class='loader loader--spinningDisc' style='margin-left:45%'></div>");
+            var pd={"x":"Consignment"};
+            $.ajax({
+                type: "post",
+                url: "../../DataAcquisition.ashx",//注意此文件必须与当前文件在同一目录下
+                data:pd,
+                dataType: "json",
+                error: function (textstatus) {
+
+                    alert('出错product');
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    var obj = eval(result);
+                    table_style(obj)
+                }
+            });
+        }
+        //表格数据加载
+        function table_style(datanav){
+            var tb = document.getElementById("table-2");
+            while(tb.rows.length>1){
+                tb.deleteRow(1);
+            }
+            for (var i = 0; i < datanav.length; i++) {
+                var html="<tr ><td>"+datanav[i]["Number"]+")"+"</td><td>"+datanav[i]["Date"]+"</td><td>"+
+                    datanav[i]["Product"]+"</td><td>"+datanav[i]["PaidPrice"]+"</td><td>"+datanav[i]["Weight"]+"</td><td>"+datanav[i]["PostPrice"]+
+                    "</td><td>" + datanav[i]["Address"] + "</td></tr>"
+                $('#table-2').append(html);
+            }
+            $('#loading').remove();
+        }
+    </script>
+    <!--表格样式-->
+    <style>
+        label, label {
+            color: white;
+            margin-left: 10%;
+        }
+
+        .edit {
+            color: rgba(0,0,0,0.3);
+        }
+
+        label:hover {
+            color: red;
+            cursor: pointer;
+        }
+    </style>
+    <!--向服务器获取数据↑-->
+    <!--加载动画↓-->
+    <style>
+        .loader--spinningDisc {
+            border: solid 0.5em #9b59b6;
+            border-right-color: transparent;
+            border-left-color: transparent;
+            padding: 0.5em;
+            width: 2em;
+            height: 2em;
+            border-radius: 50%;
+            background: #3498db;
+            background-clip: content-box;
+            animation: spinDisc 1.5s linear infinite;
+        }
+
+        @keyframes spinDisc {
+            50% {
+                border-top-color: #3498db;
+                border-bottom-color: #3498db;
+                background-color: #2ecc71;
+            }
+
+            100% {
+                transform: rotate(1turn);
+            }
+        }
+    </style>
+    <!--加载动画↑-->
+</head>
+<body style="margin-left:20px;margin-right:20px">
+    <button onclick="javascript:window.location.href='../../interface.ashx?id=ModifyConsignment&Key=33&Product=补水套盒*2&PaidPrice=12&Weight=3&PostPrice=25&Address=江苏&Clear=0&Date=2017-01-28'"></button>
+    <!--<button onclick="javascript:window.location.href='../../interface.ashx?id=DeleteConsignment&Key=20'"></button>-->
+    <div style="width:100%" id="loading"></div>
+    <div style="width:100%;height:100%">
+        <table class="layui-table" id="table-2" style="width:100%;height:100%;">
+            <thead style="width:100%">
+                <tr style="width:100%;">
+                    <th style="width:5%">序号</th>
+                    <th style="width:15%">日期</th>
+                    <th style="width:20%">产品</th>
+                    <th style="width:10%">付款价</th>
+                    <th style="width:8%">重量</th>
+                    <th style="width:8%">邮费</th>
+                    <th style="width:20%">地址</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</body>
+</html>
