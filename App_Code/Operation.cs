@@ -330,7 +330,7 @@ namespace operation
      // 操作链接产品每日数据
     public class SQLProductData:Operation1
     {
-        SqlConnection conn = new SqlConnection("server=QT-20180210RVOF\\SQLEXPRESS;user id=sa;pwd=sj76606729;database=Product_db;");
+        SqlConnection conn = new SqlConnection(Room.Public.DataBaseUrl_);
         SqlCommand comm;
         /// <summary>
         /// 添加产品链接每日数据
@@ -421,7 +421,7 @@ namespace operation
     // 数据库操作类
     public class SQLoperate:ImageOperate
     {
-        SqlConnection conn = new SqlConnection("server=QT-20180210RVOF\\SQLEXPRESS;user id=sa;pwd=sj76606729;database=taobao;");
+        SqlConnection conn = new SqlConnection(Room.Public.DataBaseUrl);
         SqlCommand comm;
         /// <summary>
         /// 修改库存
@@ -770,7 +770,7 @@ namespace operation
 
         }
         /// <summary>
-        /// 获取搜友产品成本
+        /// 获取所有产品成本
         /// </summary>
         /// <returns></returns>
         public Hashtable GetProductCost()
@@ -897,20 +897,31 @@ namespace operation
         /// <param name="Address"></param>
         /// <param name="Weight"></param>
         /// <returns></returns>
-        public int GetPostPrice(string Address,int Weight)
+        public string GetPostPrice(string Address,int Weight)
         {
             conn.Open();
             comm = new SqlCommand("select * from PostPrice_tb where charindex('"+Address+"',Address)>0", conn);
             SqlDataReader read = comm.ExecuteReader();
             read.Read();
             int result = 0;
+            int result_ = 0;
             if (read.HasRows)
             {
                 result= (int)read["FirstWeight"];
                 if(Weight>1) { result+= (Weight - 1) * (int)read["NextWeight"]; }
 
             }
-            return result;
+            read.Close();
+            comm = new SqlCommand("select * from SFPostPrice_tb where charindex('" + Address + "',Address)>0", conn);
+            read = comm.ExecuteReader();
+            read.Read();
+            if (read.HasRows)
+            {
+                result_ = (int)read["FirstWeight"];
+                if (Weight > 1) { result_ += (Weight - 1) * (int)read["NextWeight"]; }
+
+            }
+            return result.ToString()+" / "+result_.ToString();
         }
         /// <summary>
         /// 清算所有邮费
@@ -934,11 +945,28 @@ namespace operation
             }
             
         }
+        /// <summary>
+        /// 关闭释放数据库
+        /// </summary>
+        /// <param name="command"></param>
+        /// <param name="adapter"></param>
+        private void CloseDataBase(SqlCommand command, SqlDataAdapter adapter)
+        {
+            command.Dispose();adapter.Dispose();
+        }
+        private void CloseDataBase(SqlConnection connection, SqlCommand command, SqlDataAdapter adapter)
+        {
+            connection.Close(); command.Dispose(); adapter.Dispose();
+        }
+        private void CloseDataBase(SqlConnection connection, SqlCommand command,SqlDataReader reader)
+        {
+            connection.Close(); command.Dispose(); reader.Close();
+        }
     }
     //数据库图片操作
     public class ImageOperate
     {
-        SqlConnection conn = new SqlConnection("server=QT-20180210RVOF\\SQLEXPRESS;user id=sa;pwd=sj76606729;database=taobao;");
+        SqlConnection conn = new SqlConnection(Room.Public.DataBaseUrl);
         SqlCommand comm;
         /// <summary>
         /// 获取搜索活动图片
@@ -996,7 +1024,7 @@ namespace operation
             }
         }
     }
-
+    
 }
 //数据采集空间
 namespace DataAcquisition_u
@@ -1004,7 +1032,7 @@ namespace DataAcquisition_u
     //数据分析
     public class DataAnalyzing
     {
-        SqlConnection conn = new SqlConnection("server=QT-20180210RVOF\\SQLEXPRESS;user id=sa;pwd=sj76606729;database=taobao;");
+        SqlConnection conn = new SqlConnection(Room.Public.DataBaseUrl);
         SqlCommand comm;
         /// <summary>
         /// 计算近4年各年总额
@@ -1096,7 +1124,7 @@ namespace DataAcquisition_u
     //获取数据
     public class GetData
     {
-        SqlConnection conn = new SqlConnection("server=QT-20180210RVOF\\SQLEXPRESS;user id=sa;pwd=sj76606729;database=taobao;");
+        SqlConnection conn = new SqlConnection(Room.Public.DataBaseUrl);
         SqlCommand comm;
         /// <summary>
         /// 主页数据

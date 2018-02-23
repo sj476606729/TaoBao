@@ -6,9 +6,10 @@ using operation;
 using System.Collections;
 public class Interface : IHttpHandler {
 
-
+   
     public void ProcessRequest (HttpContext context) {
         string id = HttpContext.Current.Request.QueryString["id"];
+        string id_ = HttpContext.Current.Request.Form["id"];
         Operation1 operate = new Operation1();
         SQLoperate sqloperate =new SQLoperate();
         Hashtable hash = new Hashtable();

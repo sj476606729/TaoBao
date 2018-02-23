@@ -13,9 +13,9 @@ public class FileReceive : IHttpHandler {
             HttpFileCollection files = HttpContext.Current.Request.Files;
             HttpPostedFile file = files[0];
             DateTime time = DateTime.Now;
-            string date =time.Year.ToString()+ time.Month.ToString() + time.Day.ToString() + time.Hour.ToString() + time.Minute.ToString()+time.Second.ToString() + time.Millisecond.ToString();
+            string date =time.Year.ToString()+ time.Month.ToString("00") + time.Day.ToString("00") + time.Hour.ToString("00") + time.Minute.ToString("00")+time.Second.ToString("00") + time.Millisecond.ToString("000")+"1";
             string[] name = file.FileName.Split('.');
-            SqlConnection conn = new SqlConnection("server=SC-201706152014;user id=sa;pwd=sj76606729;database=taobao;");
+            SqlConnection conn = new SqlConnection(Room.Public.DataBaseUrl);
             SqlCommand comm = new SqlCommand("insert into Snapshot(ImageName) values('" +date+"."+name[name.Length-1] + "')", conn);
             conn.Open();
             comm.ExecuteNonQuery();
