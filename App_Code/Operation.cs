@@ -278,11 +278,10 @@ namespace operation
             Profit = PaidPrice  - float.Parse(MonthData["PostPrice"].ToString())-Product_cost- 550;
             renfei = PaidPrice *(float)0.05;
             zhuguangping= PaidPrice * (float)0.04;
-            xichaoqun = PaidPrice* (float)0.03;
-            caozhen= PaidPrice * (float)(0.035)/3;
+            caozhen= PaidPrice * (float)0.035;
             //shajie = (PaidPrice - Product_cost - float.Parse(MonthData["PostPrice"].ToString())) * (float)0.45 - (renfei + xichaoqun + zhuguangping + caozhen + PaidPrice * (float)0.04 + PaidPrice * (float)0.1) * (float)0.45;
-            shajie = (Profit - renfei - zhuguangping - xichaoqun - caozhen - PaidPrice * (float)0.04- PaidPrice * (float)0.1 ) * (float)0.45+ PaidPrice * (float)0.04;
-            shajun = (Profit - renfei - zhuguangping - xichaoqun - caozhen - PaidPrice * (float)0.04 - PaidPrice * (float)0.1) * (float)0.55 + PaidPrice * (float)0.1;
+            shajie = (Profit - renfei - zhuguangping  - caozhen - PaidPrice * (float)0.04- PaidPrice * (float)0.1 ) * (float)0.45+ PaidPrice * (float)0.04;
+            shajun = (Profit - renfei - zhuguangping  - caozhen - PaidPrice * (float)0.04 - PaidPrice * (float)0.1) * (float)0.55 + PaidPrice * (float)0.1;
             result.Add("MonthPrice", MonthData["PaidPrice"]);
             result.Add("Profit", Profit);result.Add("PostPrice", MonthData["PostPrice"]);
             result.Add("ProductCost", Product_cost);result.Add("GiftPrice", MonthData["GiftPrice"]);
@@ -900,7 +899,7 @@ namespace operation
         public string GetPostPrice(string Address,int Weight)
         {
             conn.Open();
-            comm = new SqlCommand("select * from PostPrice_tb where charindex('"+Address+"',Address)>0", conn);
+            comm = new SqlCommand("select * from PostPrice_tb where charindex(Address,'" + Address+ "')>0", conn);
             SqlDataReader read = comm.ExecuteReader();
             read.Read();
             int result = 0;
@@ -912,7 +911,7 @@ namespace operation
 
             }
             read.Close();
-            comm = new SqlCommand("select * from SFPostPrice_tb where charindex('" + Address + "',Address)>0", conn);
+            comm = new SqlCommand("select * from SFPostPrice_tb where charindex(Address,'" + Address + "')>0", conn);
             read = comm.ExecuteReader();
             read.Read();
             if (read.HasRows)
