@@ -976,14 +976,32 @@ namespace operation
             conn.Open();
             comm = new SqlCommand("select * from "+table+" order by ImageName desc", conn);
             string result = "";
-            SqlDataReader read = comm.ExecuteReader();
+            
             string url="GiftPicture";
             if (table == "ActiviteImage")
             {
                 url = "GiftPicture";
-            }else if (table == "Snapshot") { url = "Snapshot"; }
+            }else if (table == "Snapshot") { comm = new SqlCommand("select * from " + table + " order by CreateTime desc", conn); url = "Snapshot"; }
+            SqlDataReader read = comm.ExecuteReader();
+            SqlConnection con = new SqlConnection(Room.Public.DataBaseUrl);
+            SqlCommand com ;
+            con.Open();
             while (read.Read())
-            {
+            {  if(table== "ActiviteImage")
+                {
+                    result += "http://sj476606729.oicp.net:25900/" + url + "/" + read[0].ToString() + "+";
+                    continue;
+                }
+                DateTime dateTime = DateTime.Now.AddDays(-30);
+                if (DateTime.Compare(dateTime, (DateTime)read["CreateTime"]) > 0)
+                {
+                    File.Delete(@"E:/TaoBaoPicture/打包快照/" + read["ImageName"].ToString());
+                    com = new SqlCommand("DeleteSnapImage", con);
+                    com.CommandType = CommandType.StoredProcedure;
+                    com.Parameters.AddWithValue("@ImageName", read["ImageName"].ToString());
+                    com.ExecuteNonQuery();
+                    com.Dispose();
+                }else
                 result += "http://sj476606729.oicp.net:25900/"+url+"/"+read[0].ToString()+"+";
             }
             if (result.Length > 0) { result = result.Substring(0, result.Length - 1); }

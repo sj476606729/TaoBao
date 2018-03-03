@@ -6,7 +6,7 @@ using operation;
 using System.Collections;
 public class Interface : IHttpHandler {
 
-   
+
     public void ProcessRequest (HttpContext context) {
         string id = HttpContext.Current.Request.QueryString["id"];
         string id_ = HttpContext.Current.Request.Form["id"];
@@ -76,6 +76,8 @@ public class Interface : IHttpHandler {
             case "DeleteConsignment":
                 context.Response.Write("{\"result\":\"" + sqloperate.DeleteConsignment(int.Parse(HttpContext.Current.Request.QueryString["Key"])) + "\"}");
                 break;
+            //以下为陈煜接口
+            
 
         }
     }
